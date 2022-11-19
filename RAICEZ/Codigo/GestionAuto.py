@@ -48,7 +48,16 @@ pestana['C6'] = '=SUM(B6:B7)'
 pestana['C7'].style = 'currency'
 
 abecedario = list(string.ascii_uppercase)
-print(abecedario[0:max_col])
+#print(abecedario[0:max_col])
+abecedario_excel = abecedario[0:max_col]
+
+for i in abecedario_excel:
+    if i!='A':
+        pestana[f'{i}{max_fila}'] = f'SUM({i}6:{i}7'
+        pestana[f'{i}8'].style = 'Currency'
+ 
+ pestana[f'{abecedario_excel[0]}{max_fila+1}'] = 'Total'       
+#pestana['B8'] = '=SUM(B6:B7)'        
 
 wb.save('Temperaturas_2022.xlsx')
 
