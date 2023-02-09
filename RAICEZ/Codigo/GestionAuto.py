@@ -8,8 +8,13 @@ archivo_excel = pd.read_excel(
 
 #archivo_excel[['TtarRC_Avg(1)', 'TtarRC_Avg(2)','TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)', 'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']]
 
+
+
+#Columnas tomas encuenta para los datos a registrar
+datos = {'TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)'}
+
 Tabla_pivote = archivo_excel.pivot_table(
-    index='Date', columns='TIMESTAMP', values='TtarRC_Avg(1)', aggfunc='sum').round(0)
+    index='Date', columns='TIMESTAMP', values= datos, aggfunc='sum').round(0)
 
 print(Tabla_pivote)
 
@@ -30,39 +35,36 @@ print(max_fila)
 
 
 #Grafico
-barchart = BarChart()
-data = Reference(pestana, min_col=min_col+1, max_col=max_col,min_row=min_fila,max_row=max_fila)
-categorias = Reference(pestana, min_col=min_col+1, max_col=max_col,min_row=min_fila, max_row=max_fila)
+# barchart = BarChart()
 
-barchart.add_data(data, tittles_from_data=True)
-barchart.set_categories(categorias)
+# data = Reference(pestana, min_col=min_col+1, max_col=max_col,min_row=min_fila,max_row=max_fila)
+# categorias = Reference(pestana, min_col=min_col+1, max_col=max_col,min_row=min_fila, max_row=max_fila)
 
-pestana.add_chart(barchart, 'B12')
-barcahrt.title = 'Ventanas'
-barchart.style = 2 #5
+# barchart.add_data(data, tittles_from_data=True)
+# barchart.set_categories(categorias)
 
-pestana['B8'] = '=SUM(B6:B7)'
-pestana['B8'].style = 'currency'
+# pestana.add_chart(barchart, 'E72')
+# barcahrt.title = 'Ventanas'
+# barchart.style = 2 #5
 
-pestana['C6'] = '=SUM(B6:B7)'
-pestana['C7'].style = 'currency'
+#pestana['B8'] = '=SUM(B6:B7)'
+#pestana['B8'].style = 'currency'
 
-abecedario = list(string.ascii_uppercase)
-#print(abecedario[0:max_col])
-abecedario_excel = abecedario[0:max_col]
+#pestana['C6'] = '=SUM(B6:B7)'
+#pestana['C7'].style = 'currency'
 
-for i in abecedario_excel:
-    if i!='A':
-        pestana[f'{i}{max_fila}'] = f'SUM({i}6:{i}7'
-        pestana[f'{i}8'].style = 'Currency'
+# abecedario = list(string.ascii_uppercase)
+# #print(abecedario[0:max_col])
+# abecedario_excel = abecedario[0:max_col]
+
+# for i in abecedario_excel:
+#     if i!='A':
+#         pestana[f'{i}{max_fila}'] = f'SUM({i}6:{i}7'
+#         pestana[f'{i}8'].style = 'Currency'
  
- pestana[f'{abecedario_excel[0]}{max_fila+1}'] = 'Total'       
-#pestana['B8'] = '=SUM(B6:B7)'        
+# pestana[f'{abecedario_excel[0]}{max_fila+1}'] = 'Total'       
+# #pestana['B8'] = '=SUM(B6:B7)'        
 
 wb.save('Temperaturas_2022.xlsx')
-
-
-
-
 
 #TIMESTAMP
