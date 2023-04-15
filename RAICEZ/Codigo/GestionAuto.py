@@ -3,8 +3,7 @@ from openpyxl import load_workbook
 from openpyxl.chart import BarChart, Reference
 
 #Poner la ruta del acrivo excel a consultar
-archivo_excel = pd.read_excel(
-    'C:\ProyectosGIT\Raicez\RAICEZ\Excel\Temperatura_control.xlsx')
+archivo_excel = pd.read_excel(r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx')
 
 #archivo_excel[['TtarRC_Avg(1)', 'TtarRC_Avg(2)','TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)', 'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']]
 

@@ -3,15 +3,14 @@ import openpyxl
 import matplotlib.pyplot as plt
 
 #leer el archivo
-book = openpyxl.load_workbook(
-    'C:\ProyectosGIT\Raicez/RAICEZ/Excel/Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx', data_only=True)
+book = openpyxl.load_workbook(r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx', data_only=True)
 import pandas as pd
 #fijar la hoja 
 hoja = book.active
 
 #celdas = hoja['AQ3': 'BF6640']
 
-workbook1 = "C:\ProyectosGIT\Raicez/RAICEZ/Excel/Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx"
+workbook1 = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx'
 df = pd.read_excel(workbook1)
 valores = df[["TtarRC_Avg(1)", "TtarHC_Avg(1)"]]
 
