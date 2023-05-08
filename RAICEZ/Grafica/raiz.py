@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-workbook1 ="C:\ProyectosGIT\Raicez/RAICEZ/Excel/Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx"
+workbook1 =r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx'
 
 df = pd.read_excel(workbook1)
 

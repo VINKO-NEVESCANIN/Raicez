@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-workbook1 = 'C:\ProyectosGIT\Raicez\RAICEZ\Excel\Temperatura_control.xlsx'
+workbook1 = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx'
 df = pd.read_excel(workbook1)
  
 print(df.head())
@@ -15,3 +15,4 @@ plt.xlabel('DateTime(1)')
 plt.ylabel('TtarRC_Avg(1)')
 plt.xticks(x='DateTime(1)', rotation=40)
 plt.show()
+

@@ -2,6 +2,13 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.chart import BarChart, Reference
 
+if __name__ == '__main__':
+ 
+    x = float('NaN')
+ 
+    isNaN = pd.isna(x)
+    print(isNaN)
+
 #Poner la ruta del acrivo excel a consultar
 archivo_excel = pd.read_excel(r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx')
 
@@ -11,9 +18,10 @@ archivo_excel = pd.read_excel(r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Ex
 
 #Columnas tomas encuenta para los datos a registrar
 datos = {'TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)'}
+datos2 = {'TtarHC_Avg(1)','TtarHC_Avg(2)','TtarHC_Avg(3)','TtarHC_Avg(4)','TtarHC_Avg(5)','TtarHC_Avg(6)','TtarHC_Avg(7)','TtarHC_Avg(8)'}
 
 Tabla_pivote = archivo_excel.pivot_table(
-    index='Date', columns='TIMESTAMP', values= datos, aggfunc='sum').round(0)
+    index='TIMESTAMP', columns= 'Date', values= datos, aggfunc='sum').round(0)
 
 print(Tabla_pivote)
 
