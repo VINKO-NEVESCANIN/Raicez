@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from openpyxl import load_workbookS
+from openpyxl import load_workbook
 from openpyxl.chart import BarChart, Reference
 
 

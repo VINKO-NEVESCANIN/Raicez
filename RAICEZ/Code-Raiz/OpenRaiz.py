@@ -1,14 +1,19 @@
 import pandas as pd
 
-# Leer el archivo Excel
-ruta_archivo = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx'  # Reemplaza con la ubicación real de tu archivo
-datos_excel = pd.read_excel(ruta_archivo)
+# Lee el archivo Excel
+data = pd.read_excel(r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura_control.xlsx', engine='xlrd')
 
-# Seleccionar datos específicos
-columnas_interes = ['TIMESTAMP','RECORD','DateTime(1)','DateTime(9)','DateTime(4)','DateTime(5)','Target','TtarRC_Avg(1)','TtarRC_Avg(2)','TtarRC_Avg(3)','TtarRC_Avg(4)','TtarRC_Avg(5)','TtarRC_Avg(6)','TtarRC_Avg(7)','TtarRC_Avg(8)','TtarHC_Avg(1)','TtarHC_Avg(2)','TtarHC_Avg(3)','TtarHC_Avg(4)','TtarHC_Avg(5)','TtarHC_Avg(6)','TtarHC_Avg(7)','TtarHC_Avg(8)']  # Reemplaza con las columnas que te interesen
-datos_seleccionados = datos_excel[columnas_interes]
+# Muestra los datos en el archivo original
+print(data)
 
-# Mostrar los datos seleccionados
-print(datos_seleccionados)
+# Filtra los datos específicos que deseas guardar
+datos_filtrados = data[data['TtarRC_Avg(1)'] == '18,1256']
 
+# Crea un nuevo archivo Excel para guardar los datos filtrados
+archivo_guardado = pd.ExcelWriter('Temperaturas_2022', engine='xlsxwriter')
 
+# Escribe los datos filtrados en el archivo guardado
+datos_filtrados.to_excel(archivo_guardado, index=False)
+
+# Guarda el archivo Excel
+archivo_guardado.save()
