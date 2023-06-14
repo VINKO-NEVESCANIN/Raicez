@@ -17,12 +17,12 @@ try:
     # ...
     
     # Crear gráfica de líneas
-    df_seleccionado.plot(x='TtarRC_Avg(1)', y=['TtarRC_Avg(2)', 'TtarRC_Avg(3)'], kind='line')
-    plt.xlabel('TtarRC_Avg(1)')
-    plt.ylabel('Valores')
-    plt.title('Gráfica de Líneas')
-    plt.legend()
-    plt.show()
+    #df_seleccionado.plot(x='TtarRC_Avg(1)', y=['TtarRC_Avg(2)', 'TtarRC_Avg(3)'], kind='line')
+    #plt.xlabel('TtarRC_Avg(1)')
+    #plt.ylabel('Valores')
+    #plt.title('Gráfica de Líneas')
+    #plt.legend()
+    #plt.show()
 
 except FileNotFoundError:
     print('El archivo no existe o la ruta es incorrecta.')
