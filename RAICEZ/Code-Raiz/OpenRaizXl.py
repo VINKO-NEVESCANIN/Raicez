@@ -1,33 +1,62 @@
+import tkinter as tk
+from tkinter import filedialog
 import pandas as pd
-import matplotlib.pyplot as plt
 
-archivo_excel = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx'
-columnas_deseadas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
-                     'TtarHC_Avg(1)','TtarHC_Avg(2)','TtarHC_Avg(3)','TtarHC_Avg(4)','TtarHC_Avg(5)','TtarHC_Avg(6)','TtarHC_Avg(7)','TtarHC_Avg(8)']  # Reemplaza con los nombres de tus columnas
-archivo_salida = r'C:\Users\VINKO\Documents\GitHub\Raicez\Temperaturas_2022.xlsx'
-#print(df.head())
+def cargar_archivo():
+    ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
+    if ruta_archivo:
+        entry_ruta_archivo.delete(0, tk.END)
+        entry_ruta_archivo.insert(tk.END, ruta_archivo)
 
-try:
-    df = pd.read_excel(archivo_excel, engine='openpyxl')
-    df_seleccionado = df[columnas_deseadas]
-    df_seleccionado.to_excel(archivo_salida, index=False)
-    print('Datos guardados exitosamente en el archivo:', archivo_salida)
-    print(df_seleccionado)
-    # Realiza las operaciones necesarias con el DataFrame
-    # ...
-    
-    # Crear gráfica de líneas
-    #df_seleccionado.plot(x='TtarRC_Avg(1)', y=['TtarRC_Avg(2)', 'TtarRC_Avg(3)'], kind='line')
-    #plt.xlabel('TtarRC_Avg(1)')
-    #plt.ylabel('Valores')
-    #plt.title('Gráfica de Líneas')
-    #plt.legend()
-    #plt.show()
+def procesar_datos():
+    archivo = entry_ruta_archivo.get()
+    columnas_seleccionadas = entry_columnas.get().split(',')
+    rango_fechas = pd.date_range(start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
 
-except FileNotFoundError:
-    print('El archivo no existe o la ruta es incorrecta.')
-except Exception as e:
-    print(f'Error al leer el archivo: {str(e)}')
-    
-    
-    
+    # Leer el archivo de Excel original
+    df = pd.read_excel(archivo)
+
+    # Filtrar los datos por las columnas seleccionadas y el rango de fechas
+    df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
+
+    # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
+    df_seleccionado.to_excel('datos_seleccionados.xlsx', index=False)
+
+    # Mostrar un mensaje de éxito
+    tk.messagebox.showinfo('Procesamiento completado', 'Se han seleccionado y guardado los datos correctamente.')
+
+# Crear la ventana principal
+ventana = tk.Tk()
+ventana.title('Selección de datos de Excel')
+ventana.geometry('400x250')
+
+# Etiqueta y campo de entrada para la ruta del archivo
+label_ruta_archivo = tk.Label(ventana, text='Archivo de Excel:')
+label_ruta_archivo.pack()
+entry_ruta_archivo = tk.Entry(ventana, width=40)
+entry_ruta_archivo.pack()
+button_cargar_archivo = tk.Button(ventana, text='Cargar', command=cargar_archivo)
+button_cargar_archivo.pack()
+
+# Etiquetas y campos de entrada para la selección de datos
+label_columnas = tk.Label(ventana, text='Columnas seleccionadas (separadas por coma):')
+label_columnas.pack()
+entry_columnas = tk.Entry(ventana, width=40)
+entry_columnas.pack()
+
+label_fecha_inicio = tk.Label(ventana, text='Fecha de inicio:')
+label_fecha_inicio.pack()
+entry_fecha_inicio = tk.Entry(ventana, width=40)
+entry_fecha_inicio.pack()
+
+label_fecha_fin = tk.Label(ventana, text='Fecha de fin:')
+label_fecha_fin.pack()
+entry_fecha_fin = tk.Entry(ventana, width=40)
+entry_fecha_fin.pack()
+
+# Botón para procesar los datos
+button_procesar = tk.Button(ventana, text='Procesar', command=procesar_datos)
+button_procesar.pack()
+
+# Iniciar el bucle principal de la ventana
+ventana.mainloop()
