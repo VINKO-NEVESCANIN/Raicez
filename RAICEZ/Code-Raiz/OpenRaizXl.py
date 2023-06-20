@@ -17,10 +17,13 @@ def procesar_datos():
     df = pd.read_excel(archivo)
 
     # Filtrar los datos por las columnas seleccionadas y el rango de fechas
-    df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
+    #df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
+    
+    # Acceder a la columna de fechas por su posición (en este ejemplo, la primera columna)
+    columna_fechas = df.iloc[:, 0]  # Utiliza el índice 0 para la primera columna
 
     # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
-    df_seleccionado.to_excel('datos_seleccionados.xlsx', index=False)
+    columna_fechas.to_excel('datos_seleccionados.xlsx', index=False)
 
     # Mostrar un mensaje de éxito
     tk.messagebox.showinfo('Procesamiento completado', 'Se han seleccionado y guardado los datos correctamente.')
