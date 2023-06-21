@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
+import os
 
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
@@ -20,10 +21,17 @@ def procesar_datos():
     #df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
     
     # Acceder a la columna de fechas por su posición (en este ejemplo, la primera columna)
-    columna_fechas = df.iloc[:, 0]  # Utiliza el índice 0 para la primera columna
+    df_filtrado = df.iloc[:, 0]  # Utiliza el índice 0 para la primera columna
 
     # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
-    columna_fechas.to_excel('datos_seleccionados.xlsx', index=False)
+    df_filtrado.to_excel('datos_seleccionados.xlsx', index=False)
+    
+    # Mostrar mensaje de éxito
+    print("El archivo se ha guardado exitosamente.")
+
+    # Abrir el archivo Excel guardado automáticamente
+    ruta_archivo = os.path.abspath('Temperaturas_2022.xlsx')
+    os.system(f'start {ruta_archivo}')
 
     # Mostrar un mensaje de éxito
     tk.messagebox.showinfo('Procesamiento completado', 'Se han seleccionado y guardado los datos correctamente.')
