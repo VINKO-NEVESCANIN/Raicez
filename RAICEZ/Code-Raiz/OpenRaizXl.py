@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
+from datetime import datetime
 import os
 
 def cargar_archivo():
@@ -8,6 +9,7 @@ def cargar_archivo():
     if ruta_archivo:
         entry_ruta_archivo.delete(0, tk.END)
         entry_ruta_archivo.insert(tk.END, ruta_archivo)
+
 
 def procesar_datos():
     archivo = entry_ruta_archivo.get()
@@ -22,15 +24,29 @@ def procesar_datos():
     
     # Acceder a la columna de fechas por su posición (en este ejemplo, la primera columna)
     df_filtrado = df.iloc[:, 0]  # Utiliza el índice 0 para la primera columna
+    
+    
+    # Mostrar los datos con formato de fecha y hora
+    for index, row in df.iterrows():
+        fecha = row['FECHA'] if 'FECHA' in df.columns else ''
+        hora = row['TIMESTAMP'] if 'TIMESTAMP' in df.columns else ''
+        fecha_formateada = fecha.strftime("%Y-%m-%d") if isinstance(fecha, datetime) else ''
+        hora_formateada = hora.strftime("%H:%M:%S") if isinstance(hora, datetime) else ''
+        print(f"Fecha: {fecha_formateada}, Hora: {hora_formateada}")
+
+
 
     # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
-    df_filtrado.to_excel('datos_seleccionados.xlsx', index=False)
+    ###df_filtrado.to_excel('print(df.columns).xlsx', index=False)
+    archivo_filtrado = f'archivo_filtrado.xlsx'
+    df.to_excel(archivo_filtrado, index=False)
+    
     
     # Mostrar mensaje de éxito
     print("El archivo se ha guardado exitosamente.")
 
     # Abrir el archivo Excel guardado automáticamente
-    ruta_archivo = os.path.abspath('Temperaturas_2022.xlsx')
+    ruta_archivo = os.path.abspath(archivo_filtrado)
     os.system(f'start {ruta_archivo}')
 
     # Mostrar un mensaje de éxito
