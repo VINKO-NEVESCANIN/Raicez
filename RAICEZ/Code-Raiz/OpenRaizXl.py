@@ -25,6 +25,23 @@ def procesar_datos():
     # Acceder a la columna de fechas por su posición (en este ejemplo, la primera columna)
     df_filtrado = df.iloc[:, 0]  # Utiliza el índice 0 para la primera columna
     
+    # Convertir las columnas al formato datetime
+    for col in columnas_seleccionadas:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col])
+
+    
+     # Resaltar los valores numéricos en el archivo Excel filtrado
+    wb = load_workbook(archivo_filtrado)
+    ws = wb.active
+
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=2):
+        for cell in row:
+            if cell.value is not None and isinstance(cell.value, (int, float)):
+                if rango_columna1_min <= cell.value <= rango_columna1_max or rango_columna2_min <= cell.value <= rango_columna2_max:
+                    cell.font = Font(bold=True, underline='single')  # Resaltar en negrita y subrayado
+    
+    
     
     # Mostrar los datos con formato de fecha y hora
     for index, row in df.iterrows():
