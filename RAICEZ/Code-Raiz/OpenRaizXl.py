@@ -1,8 +1,12 @@
 import tkinter as tk
 from tkinter import filedialog
+from openpyxl import load_workbook
+from openpyxl.styles import Font
 import pandas as pd
 from datetime import datetime
 import os
+import matplotlib.pyplot as plt
+from tkinter import *
 
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
@@ -30,8 +34,68 @@ def procesar_datos():
         if col in df.columns:
             df[col] = pd.to_datetime(df[col])
 
+    # Crear la interfaz gráfica
+    root = Tk()
+    root.title("Aplicación")
     
-     # Resaltar los valores numéricos en el archivo Excel filtrado
+    
+    
+    # Definir cajas de entrada para los rangos de las columnas
+    caja_rango_columna1_min = Entry(root)
+    caja_rango_columna1_max = Entry(root)
+    caja_rango_columna2_min = Entry(root)
+    caja_rango_columna2_max = Entry(root)
+    
+    # Obtener los parámetros ingresados desde la interfaz gráfica
+    try:
+        rango_columna1_min = int(caja_rango_columna1_min.get())
+    except ValueError:
+        rango_columna1_min = 0  # Valor predeterminado si la entrada no es un número válido
+
+    try:
+        rango_columna1_max = int(caja_rango_columna1_max.get())
+    except ValueError:
+        rango_columna1_max = 100  # Valor predeterminado si la entrada no es un número válido
+
+    try:
+        rango_columna2_min = int(caja_rango_columna2_min.get())
+    except ValueError:
+        rango_columna2_min = 0  # Valor predeterminado si la entrada no es un número válido
+
+    try:
+        rango_columna2_max = int(caja_rango_columna2_max.get())
+    except ValueError:
+        rango_columna2_max = 100  # Valor predeterminado si la entrada no es un número válido
+
+    # Filtrar los datos según los rangos de valores
+    
+    
+    # Obtener los parámetros ingresados desde la interfaz gráfica
+    rango_columna1_min = int(caja_rango_columna1_min.get())  # Valor mínimo para Columna 1
+    rango_columna1_max = int(caja_rango_columna1_max.get())  # Valor máximo para Columna 1
+    rango_columna2_min = int(caja_rango_columna2_min.get())  # Valor mínimo para Columna 2
+    rango_columna2_max = int(caja_rango_columna2_max.get())  # Valor máximo para Columna 2
+
+    # Filtrar los datos según los rangos de valores
+    df_filtrado = df[(df['Columna1'] >= rango_columna1_min) & (df['Columna1'] <= rango_columna1_max) &
+                     (df['Columna2'] >= rango_columna2_min) & (df['Columna2'] <= rango_columna2_max)]
+
+    # Guardar los datos filtrados en un nuevo archivo de Excel
+    archivo_filtrado = 'archivo_filtrado.xlsx'
+    df_filtrado.to_excel(archivo_filtrado, index=False)
+    
+    # Generar la gráfica de los datos filtrados
+    plt.figure(figsize=(8, 6))
+    plt.plot(df_filtrado['Columna1'], label='Columna1')
+    plt.plot(df_filtrado['Columna2'], label='Columna2')
+    plt.xlabel('Índice')
+    plt.ylabel('Valores')
+    plt.title('Gráfica de datos filtrados')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('grafica_datos_filtrados.png')  # Guardar la gráfica como imagen
+
+    # Resaltar los valores numéricos en el archivo Excel filtrado
     wb = load_workbook(archivo_filtrado)
     ws = wb.active
 
@@ -41,8 +105,7 @@ def procesar_datos():
                 if rango_columna1_min <= cell.value <= rango_columna1_max or rango_columna2_min <= cell.value <= rango_columna2_max:
                     cell.font = Font(bold=True, underline='single')  # Resaltar en negrita y subrayado
     
-    
-    
+     
     # Mostrar los datos con formato de fecha y hora
     for index, row in df.iterrows():
         fecha = row['FECHA'] if 'FECHA' in df.columns else ''
