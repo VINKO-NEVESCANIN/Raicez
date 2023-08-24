@@ -47,34 +47,33 @@ def procesar_datos():
     caja_rango_columna2_max = Entry(root)
     
     # Obtener los parámetros ingresados desde la interfaz gráfica
+    rango_columna1_min_text = caja_rango_columna1_min.get()
+    rango_columna1_max_text = caja_rango_columna1_max.get()
+    rango_columna2_min_text = caja_rango_columna2_min.get()
+    rango_columna2_max_text = caja_rango_columna2_max.get()
+
+    # Validar y convertir los valores de las cajas de entrada
     try:
-        rango_columna1_min = int(caja_rango_columna1_min.get())
+        rango_columna1_min = int(rango_columna1_min_text) if rango_columna1_min_text else 0
     except ValueError:
-        rango_columna1_min = 0  # Valor predeterminado si la entrada no es un número válido
+        rango_columna1_min = 0
 
     try:
-        rango_columna1_max = int(caja_rango_columna1_max.get())
+        rango_columna1_max = int(rango_columna1_max_text) if rango_columna1_max_text else 100
     except ValueError:
-        rango_columna1_max = 100  # Valor predeterminado si la entrada no es un número válido
+        rango_columna1_max = 100
 
     try:
-        rango_columna2_min = int(caja_rango_columna2_min.get())
+        rango_columna2_min = int(rango_columna2_min_text) if rango_columna2_min_text else 0
     except ValueError:
-        rango_columna2_min = 0  # Valor predeterminado si la entrada no es un número válido
+        rango_columna2_min = 0
 
     try:
-        rango_columna2_max = int(caja_rango_columna2_max.get())
+        rango_columna2_max = int(rango_columna2_max_text) if rango_columna2_max_text else 100
     except ValueError:
-        rango_columna2_max = 100  # Valor predeterminado si la entrada no es un número válido
+        rango_columna2_max = 100
 
-    # Filtrar los datos según los rangos de valores
-    
-    
-    # Obtener los parámetros ingresados desde la interfaz gráfica
-    rango_columna1_min = int(caja_rango_columna1_min.get())  # Valor mínimo para Columna 1
-    rango_columna1_max = int(caja_rango_columna1_max.get())  # Valor máximo para Columna 1
-    rango_columna2_min = int(caja_rango_columna2_min.get())  # Valor mínimo para Columna 2
-    rango_columna2_max = int(caja_rango_columna2_max.get())  # Valor máximo para Columna 2
+
 
     # Filtrar los datos según los rangos de valores
     df_filtrado = df[(df['Columna1'] >= rango_columna1_min) & (df['Columna1'] <= rango_columna1_max) &
