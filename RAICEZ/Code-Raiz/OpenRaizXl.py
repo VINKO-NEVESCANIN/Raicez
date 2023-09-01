@@ -45,39 +45,73 @@ def procesar_datos():
     caja_rango_columna1_max = Entry(root)
     caja_rango_columna2_min = Entry(root)
     caja_rango_columna2_max = Entry(root)
+    caja_rango_columna3_min = Entry(root)
+    caja_rango_columna3_max = Entry(root)
+    caja_rango_columna4_min = Entry(root)
+    caja_rango_columna4_max = Entry(root)
     
     # Obtener los parámetros ingresados desde la interfaz gráfica
     rango_columna1_min_text = caja_rango_columna1_min.get()
     rango_columna1_max_text = caja_rango_columna1_max.get()
     rango_columna2_min_text = caja_rango_columna2_min.get()
     rango_columna2_max_text = caja_rango_columna2_max.get()
+    rango_columna3_min_text = caja_rango_columna3_min.get()
+    rango_columna3_max_text = caja_rango_columna3_max.get()
+    rango_columna4_min_text = caja_rango_columna4_min.get()
+    rango_columna4_max_text = caja_rango_columna4_max.get()
 
     # Validar y convertir los valores de las cajas de entrada
     try:
-        rango_columna1_min = int(rango_columna1_min_text) if rango_columna1_min_text else 0
+        rango_columna1_min = float(rango_columna1_min_text) if rango_columna1_min_text else 0.0
     except ValueError:
-        rango_columna1_min = 0
+        rango_columna1_min = 0.0
 
     try:
-        rango_columna1_max = int(rango_columna1_max_text) if rango_columna1_max_text else 100
+        rango_columna1_max = float(rango_columna1_max_text) if rango_columna1_max_text else float('inf')
     except ValueError:
-        rango_columna1_max = 100
+        rango_columna1_max = float('inf')
+        
+    try:
+        rango_columna2_min = float(rango_columna2_min_text) if rango_columna1_min_text else 0.0
+    except ValueError:
+        rango_columna2_min = 0.0
 
     try:
-        rango_columna2_min = int(rango_columna2_min_text) if rango_columna2_min_text else 0
+        rango_columna2_max = float(rango_columna2_max_text) if rango_columna1_max_text else float('inf')
     except ValueError:
-        rango_columna2_min = 0
+        rango_columna2_max = float('inf')
+        
+    try:
+        rango_columna3_min = float(rango_columna3_min_text) if rango_columna1_min_text else 0.0
+    except ValueError:
+        rango_columna3_min = 0.0
 
     try:
-        rango_columna2_max = int(rango_columna2_max_text) if rango_columna2_max_text else 100
+        rango_columna3_max = float(rango_columna3_max_text) if rango_columna1_max_text else float('inf')
     except ValueError:
-        rango_columna2_max = 100
+        rango_columna3_max = float('inf')
+        
+    try:
+        rango_columna4_min = float(rango_columna4_min_text) if rango_columna1_min_text else 0.0
+    except ValueError:
+        rango_columna4_min = 0.0
 
-
-
+    try:
+        rango_columna4_max = float(rango_columna4_max_text) if rango_columna1_max_text else float('inf')
+    except ValueError:
+        rango_columna4_max = float('inf')  
+        
     # Filtrar los datos según los rangos de valores
-    df_filtrado = df[(df['Columna1'] >= rango_columna1_min) & (df['Columna1'] <= rango_columna1_max) &
-                     (df['Columna2'] >= rango_columna2_min) & (df['Columna2'] <= rango_columna2_max)]
+    columnas_avg = [f'TtarRC_Avg({i})' for i in range(1, 9)]
+    df_filtrado = df[
+        (df[columnas_avg].astype(float) >= rango_columna1_min) & (df[columnas_avg].astype(float) <= rango_columna1_max) &
+        (df[columnas_avg].astype(float) >= rango_columna2_min) & (df[columnas_avg].astype(float) <= rango_columna2_max) &
+        (df[columnas_avg].astype(float) >= rango_columna3_min) & (df[columnas_avg].astype(float) <= rango_columna3_max) &
+        (df[columnas_avg].astype(float) >= rango_columna4_min) & (df[columnas_avg].astype(float) <= rango_columna4_max)
+        # Repite el mismo patrón para las otras columnas
+        ]
+        
+            
 
     # Guardar los datos filtrados en un nuevo archivo de Excel
     archivo_filtrado = 'archivo_filtrado.xlsx'
