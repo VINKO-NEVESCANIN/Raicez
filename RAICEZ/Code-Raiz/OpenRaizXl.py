@@ -8,14 +8,33 @@ import os
 import matplotlib.pyplot as plt
 from tkinter import *
 
+
+archivo_excel = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx'
+df = pd.read_excel(archivo_excel, engine='openpyxl')
+print(df.head)
+
+
+# Definir cajas de entrada para los rangos de las columnas como variables globales
+cajas_rango_columnas = []
+df = None
+rango_columna1_min = 0.0
+rango_columna1_max = float('inf')
+rango_columna2_min = 0.0
+rango_columna2_max = float('inf')
+
+
+
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
     if ruta_archivo:
         entry_ruta_archivo.delete(0, tk.END)
         entry_ruta_archivo.insert(tk.END, ruta_archivo)
-
+        
 
 def procesar_datos():
+    global cajas_rango_columnas  # Para poder acceder a las cajas desde otras funciones
+    global df
+
     archivo = entry_ruta_archivo.get()
     columnas_seleccionadas = entry_columnas.get().split(',')
     rango_fechas = pd.date_range(start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
@@ -24,98 +43,70 @@ def procesar_datos():
     df = pd.read_excel(archivo)
 
     # Filtrar los datos por las columnas seleccionadas y el rango de fechas
-    #df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
-    
-    # Acceder a la columna de fechas por su posición (en este ejemplo, la primera columna)
-    df_filtrado = df.iloc[:, 0]  # Utiliza el índice 0 para la primera columna
-    
-    # Convertir las columnas al formato datetime
-    for col in columnas_seleccionadas:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col])
+    # df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
 
     # Crear la interfaz gráfica
     root = Tk()
     root.title("Aplicación")
-    
-    
-    
-    # Definir cajas de entrada para los rangos de las columnas
-    caja_rango_columna1_min = Entry(root)
-    caja_rango_columna1_max = Entry(root)
-    caja_rango_columna2_min = Entry(root)
-    caja_rango_columna2_max = Entry(root)
-    caja_rango_columna3_min = Entry(root)
-    caja_rango_columna3_max = Entry(root)
-    caja_rango_columna4_min = Entry(root)
-    caja_rango_columna4_max = Entry(root)
-    
+
+    # Nombres de las columnas
+    nombres_columnas = ['Columna1', 'Columna2', 'Columna3', 'Columna4']
+
+    # Crear cajas de entrada y etiquetas para cada columna
+    for nombre_columna in nombres_columnas:
+        label = Label(root, text=f'Rango para {nombre_columna}:')
+        label.pack()
+
+        caja_min = Entry(root)
+        caja_max = Entry(root)
+
+        caja_min.pack()
+        caja_max.pack()
+
+        cajas_rango_columnas.append((caja_min, caja_max))
+
+    # Botón para realizar el filtrado
+    boton_filtrar = Button(root, text="Filtrar", command=filtrar_datos)
+    boton_filtrar.pack()
+
+def filtrar_datos():
+    global cajas_rango_columnas  # Para acceder a las cajas desde esta función
+
     # Obtener los parámetros ingresados desde la interfaz gráfica
-    rango_columna1_min_text = caja_rango_columna1_min.get()
-    rango_columna1_max_text = caja_rango_columna1_max.get()
-    rango_columna2_min_text = caja_rango_columna2_min.get()
-    rango_columna2_max_text = caja_rango_columna2_max.get()
-    rango_columna3_min_text = caja_rango_columna3_min.get()
-    rango_columna3_max_text = caja_rango_columna3_max.get()
-    rango_columna4_min_text = caja_rango_columna4_min.get()
-    rango_columna4_max_text = caja_rango_columna4_max.get()
+    rangos = []
 
-    # Validar y convertir los valores de las cajas de entrada
-    try:
-        rango_columna1_min = float(rango_columna1_min_text) if rango_columna1_min_text else 0.0
-    except ValueError:
-        rango_columna1_min = 0.0
+    for caja_min, caja_max in cajas_rango_columnas:
+        rango_min_text = caja_min.get()
+        rango_max_text = caja_max.get()
 
-    try:
-        rango_columna1_max = float(rango_columna1_max_text) if rango_columna1_max_text else float('inf')
-    except ValueError:
-        rango_columna1_max = float('inf')
-        
-    try:
-        rango_columna2_min = float(rango_columna2_min_text) if rango_columna1_min_text else 0.0
-    except ValueError:
-        rango_columna2_min = 0.0
+        try:
+            rango_min = float(rango_min_text) if rango_min_text else 0.0
+        except ValueError:
+            rango_min = 0.0
 
-    try:
-        rango_columna2_max = float(rango_columna2_max_text) if rango_columna1_max_text else float('inf')
-    except ValueError:
-        rango_columna2_max = float('inf')
-        
-    try:
-        rango_columna3_min = float(rango_columna3_min_text) if rango_columna1_min_text else 0.0
-    except ValueError:
-        rango_columna3_min = 0.0
+        try:
+            rango_max = float(rango_max_text) if rango_max_text else float('inf')
+        except ValueError:
+            rango_max = float('inf')
 
-    try:
-        rango_columna3_max = float(rango_columna3_max_text) if rango_columna1_max_text else float('inf')
-    except ValueError:
-        rango_columna3_max = float('inf')
-        
-    try:
-        rango_columna4_min = float(rango_columna4_min_text) if rango_columna1_min_text else 0.0
-    except ValueError:
-        rango_columna4_min = 0.0
+        rangos.append((rango_min, rango_max))
 
-    try:
-        rango_columna4_max = float(rango_columna4_max_text) if rango_columna1_max_text else float('inf')
-    except ValueError:
-        rango_columna4_max = float('inf')  
-        
     # Filtrar los datos según los rangos de valores
-    columnas_avg = [f'TtarRC_Avg({i})' for i in range(1, 9)]
-    df_filtrado = df[
-        (df[columnas_avg].astype(float) >= rango_columna1_min) & (df[columnas_avg].astype(float) <= rango_columna1_max) &
-        (df[columnas_avg].astype(float) >= rango_columna2_min) & (df[columnas_avg].astype(float) <= rango_columna2_max) &
-        (df[columnas_avg].astype(float) >= rango_columna3_min) & (df[columnas_avg].astype(float) <= rango_columna3_max) &
-        (df[columnas_avg].astype(float) >= rango_columna4_min) & (df[columnas_avg].astype(float) <= rango_columna4_max)
-        # Repite el mismo patrón para las otras columnas
-        ]
-        
+    for i, (rango_min, rango_max) in enumerate(rangos):
+        columna = f'Columna{i + 1}'
+        df_filtrado = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
             
 
     # Guardar los datos filtrados en un nuevo archivo de Excel
     archivo_filtrado = 'archivo_filtrado.xlsx'
     df_filtrado.to_excel(archivo_filtrado, index=False)
+    
+    # Mostrar la gráfica de los datos
+    plt.plot(df_filtrado['Columna1'], df_filtrado['Columna2'])
+    plt.xlabel('Columna1')
+    plt.ylabel('Columna2')
+    plt.title('Gráfica de Columna1 vs Columna2')
+    plt.show()
     
     # Generar la gráfica de los datos filtrados
     plt.figure(figsize=(8, 6))
@@ -137,7 +128,9 @@ def procesar_datos():
             if cell.value is not None and isinstance(cell.value, (int, float)):
                 if rango_columna1_min <= cell.value <= rango_columna1_max or rango_columna2_min <= cell.value <= rango_columna2_max:
                     cell.font = Font(bold=True, underline='single')  # Resaltar en negrita y subrayado
-    
+
+    # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
+    df_filtrado.to_excel(archivo_filtrado, index=False)
      
     # Mostrar los datos con formato de fecha y hora
     for index, row in df.iterrows():
