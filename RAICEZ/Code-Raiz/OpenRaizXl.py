@@ -9,10 +9,9 @@ import matplotlib.pyplot as plt
 from tkinter import *
 
 
-archivo_excel = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx'
-df = pd.read_excel(archivo_excel, engine='openpyxl')
-print(df.head)
-
+#archivo_excel = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx'
+#df = pd.read_excel(archivo_excel, engine='openpyxl')
+#print(df.head)
 
 # Definir cajas de entrada para los rangos de las columnas como variables globales
 cajas_rango_columnas = []
@@ -48,26 +47,30 @@ def procesar_datos():
     # Crear la interfaz gráfica
     root = Tk()
     root.title("Aplicación")
+    
 
     # Nombres de las columnas
-    nombres_columnas = ['Columna1', 'Columna2', 'Columna3', 'Columna4']
+    nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)','TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']
 
-    # Crear cajas de entrada y etiquetas para cada columna
-    for nombre_columna in nombres_columnas:
-        label = Label(root, text=f'Rango para {nombre_columna}:')
-        label.pack()
+    # Crear cajas de entrada y etiquetas para cada columna en dos columnas
+    for i in range(0, len(nombres_columnas), 2):
+        for j in range(2):
+            if i + j < len(nombres_columnas):
+                nombre_columna = nombres_columnas[i + j]
+                label = Label(root, text=f'Rango para {nombre_columna}:')
+                label.grid(row=i, column=j * 2)
 
-        caja_min = Entry(root)
-        caja_max = Entry(root)
+                caja_min = Entry(root)
+                caja_max = Entry(root)
 
-        caja_min.pack()
-        caja_max.pack()
+                caja_min.grid(row=i + 1, column=j * 2)
+                caja_max.grid(row=i + 1, column=j * 2 + 1)
 
-        cajas_rango_columnas.append((caja_min, caja_max))
+                cajas_rango_columnas.append((caja_min, caja_max))
 
     # Botón para realizar el filtrado
     boton_filtrar = Button(root, text="Filtrar", command=filtrar_datos)
-    boton_filtrar.pack()
+    boton_filtrar.grid(row=len(nombres_columnas), column=0, columnspan=2)
 
 def filtrar_datos():
     global cajas_rango_columnas  # Para acceder a las cajas desde esta función
@@ -96,7 +99,7 @@ def filtrar_datos():
         columna = f'Columna{i + 1}'
         df_filtrado = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
             
-
+    
     # Guardar los datos filtrados en un nuevo archivo de Excel
     archivo_filtrado = 'archivo_filtrado.xlsx'
     df_filtrado.to_excel(archivo_filtrado, index=False)
