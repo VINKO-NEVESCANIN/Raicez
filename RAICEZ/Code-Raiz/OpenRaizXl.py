@@ -22,46 +22,56 @@ rango_columna2_min = 0.0
 rango_columna2_max = float('inf')
 
 
+# Nombres de las columnas
+nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
+                    'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']
+
+
 
 def cargar_archivo():
-    ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
+    ruta_archivo = filedialog.askopenfilename(
+        filetypes=[('Archivos Excel', '*.xlsx')])
     if ruta_archivo:
         entry_ruta_archivo.delete(0, tk.END)
         entry_ruta_archivo.insert(tk.END, ruta_archivo)
-        
+
 
 def procesar_datos():
     global cajas_rango_columnas  # Para poder acceder a las cajas desde otras funciones
     global df
+    global archivo_filtrado
+    
 
     archivo = entry_ruta_archivo.get()
     columnas_seleccionadas = entry_columnas.get().split(',')
-    rango_fechas = pd.date_range(start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
+    rango_fechas = pd.date_range(
+        start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
 
     # Leer el archivo de Excel original
     df = pd.read_excel(archivo)
-
-    # Filtrar los datos por las columnas seleccionadas y el rango de fechas
-    # df_seleccionado = df[df['Fecha'].isin(rango_fechas)][columnas_seleccionadas]
-
-    # Crear la interfaz gráfica
-    root = Tk()
-    root.title("Aplicación")
     
+    # Definir la variable archivo_filtrado
+    archivo_filtrado = 'archivo_filtrado.xlsx'
+    
+    # Convertir las columnas a valores numéricos
+    for columna in columnas_seleccionadas:
+        df[columna] = pd.to_numeric(df[columna], errors='coerce')
 
-    # Nombres de las columnas
-    nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)','TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']
+    # Crear la interfaz gráfica en la ventana principal
+    for widget in ventana.winfo_children():
+        widget.destroy()
 
+    
     # Crear cajas de entrada y etiquetas para cada columna en dos columnas
     for i in range(0, len(nombres_columnas), 2):
         for j in range(2):
             if i + j < len(nombres_columnas):
                 nombre_columna = nombres_columnas[i + j]
-                label = Label(root, text=f'Rango para {nombre_columna}:')
+                label = tk.Label(ventana, text=f'Rango para {nombre_columna}:')
                 label.grid(row=i, column=j * 2)
 
-                caja_min = Entry(root)
-                caja_max = Entry(root)
+                caja_min = tk.Entry(ventana)
+                caja_max = tk.Entry(ventana)
 
                 caja_min.grid(row=i + 1, column=j * 2)
                 caja_max.grid(row=i + 1, column=j * 2 + 1)
@@ -69,8 +79,10 @@ def procesar_datos():
                 cajas_rango_columnas.append((caja_min, caja_max))
 
     # Botón para realizar el filtrado
-    boton_filtrar = Button(root, text="Filtrar", command=filtrar_datos)
+    boton_filtrar = tk.Button(ventana, text="Filtrar", command=filtrar_datos)
     boton_filtrar.grid(row=len(nombres_columnas), column=0, columnspan=2)
+    
+
 
 def filtrar_datos():
     global cajas_rango_columnas  # Para acceder a las cajas desde esta función
@@ -88,40 +100,48 @@ def filtrar_datos():
             rango_min = 0.0
 
         try:
-            rango_max = float(rango_max_text) if rango_max_text else float('inf')
+            rango_max = float(
+                rango_max_text) if rango_max_text else float('inf')
         except ValueError:
             rango_max = float('inf')
 
         rangos.append((rango_min, rango_max))
+        
+        
+        
 
     # Filtrar los datos según los rangos de valores
     for i, (rango_min, rango_max) in enumerate(rangos):
         columna = f'Columna{i + 1}'
-        df_filtrado = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
-            
-    
-    # Guardar los datos filtrados en un nuevo archivo de Excel
-    archivo_filtrado = 'archivo_filtrado.xlsx'
-    df_filtrado.to_excel(archivo_filtrado, index=False)
-    
-    # Mostrar la gráfica de los datos
-    plt.plot(df_filtrado['Columna1'], df_filtrado['Columna2'])
-    plt.xlabel('Columna1')
-    plt.ylabel('Columna2')
-    plt.title('Gráfica de Columna1 vs Columna2')
-    plt.show()
-    
-    # Generar la gráfica de los datos filtrados
-    plt.figure(figsize=(8, 6))
-    plt.plot(df_filtrado['Columna1'], label='Columna1')
-    plt.plot(df_filtrado['Columna2'], label='Columna2')
-    plt.xlabel('Índice')
-    plt.ylabel('Valores')
-    plt.title('Gráfica de datos filtrados')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('grafica_datos_filtrados.png')  # Guardar la gráfica como imagen
+        df_filtrado = df[(df[columna] >= rango_min) &
+                         (df[columna] <= rango_max)]
+    # Imprimir los nombres de las columnas
+    print(df_filtrado.columns)
 
+    if 'df_filtrado' in locals():  # Verifica si df_filtrado está definido
+        # Guardar los datos filtrados en un nuevo archivo de Excel
+        df_filtrado.to_excel(archivo_filtrado, index=False)
+        
+        
+
+        # Mostrar la gráfica de los datos
+        plt.plot(df_filtrado['TtarRC_Avg(1)'], df_filtrado['TtarHC_Avg(1)'])
+        plt.xlabel('TtarRC_Avg(1)')
+        plt.ylabel('TtarHC_Avg(1)')
+        plt.title('Gráfica de TtarRC_Avg(1) vs TtarHC_Avg(1)')
+        plt.show()
+
+        # Generar la gráfica de los datos filtrados
+        plt.figure(figsize=(8, 6))
+        plt.plot(df_filtrado['TtarRC_Avg(1)'], label='TtarRC_Avg(1)')
+        plt.plot(df_filtrado['TtarHC_Avg(1)'], label='TtarHC_Avg(1)')
+        plt.xlabel('Índice')
+        plt.ylabel('Valores')
+        plt.title('Gráfica de datos filtrados')
+        plt.legend()
+        plt.grid(True)
+        # Guardar la gráfica como imagen
+        plt.savefig('grafica_datos_filtrados.png')
     # Resaltar los valores numéricos en el archivo Excel filtrado
     wb = load_workbook(archivo_filtrado)
     ws = wb.active
