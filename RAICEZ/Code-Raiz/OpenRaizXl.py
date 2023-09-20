@@ -9,10 +9,6 @@ import matplotlib.pyplot as plt
 from tkinter import *
 
 
-#archivo_excel = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx'
-#df = pd.read_excel(archivo_excel, engine='openpyxl')
-#print(df.head)
-
 # Definir cajas de entrada para los rangos de las columnas como variables globales
 cajas_rango_columnas = []
 df = None
@@ -116,7 +112,7 @@ def filtrar_datos():
         df_filtrado = df[(df[columna] >= rango_min) &
                          (df[columna] <= rango_max)]
     # Imprimir los nombres de las columnas
-    print(df_filtrado.columns)
+    #print(df_filtrado.columns)
 
     if 'df_filtrado' in locals():  # Verifica si df_filtrado está definido
         # Guardar los datos filtrados en un nuevo archivo de Excel
@@ -125,23 +121,25 @@ def filtrar_datos():
         
 
         # Mostrar la gráfica de los datos
-        plt.plot(df_filtrado['TtarRC_Avg(1)'], df_filtrado['TtarHC_Avg(1)'])
-        plt.xlabel('TtarRC_Avg(1)')
-        plt.ylabel('TtarHC_Avg(1)')
-        plt.title('Gráfica de TtarRC_Avg(1) vs TtarHC_Avg(1)')
+        plt.plot(df_filtrado['columna1'], df_filtrado['columna2'])
+        plt.xlabel('columna1')
+        plt.ylabel('columna2')
+        plt.title('Gráfica de columna1 vs columna2')
         plt.show()
 
         # Generar la gráfica de los datos filtrados
         plt.figure(figsize=(8, 6))
-        plt.plot(df_filtrado['TtarRC_Avg(1)'], label='TtarRC_Avg(1)')
-        plt.plot(df_filtrado['TtarHC_Avg(1)'], label='TtarHC_Avg(1)')
+        plt.plot(df_filtrado['columna1'], label='columna1')
+        plt.plot(df_filtrado['columna2'], label='columna2')
         plt.xlabel('Índice')
         plt.ylabel('Valores')
         plt.title('Gráfica de datos filtrados')
         plt.legend()
         plt.grid(True)
+        
         # Guardar la gráfica como imagen
         plt.savefig('grafica_datos_filtrados.png')
+        
     # Resaltar los valores numéricos en el archivo Excel filtrado
     wb = load_workbook(archivo_filtrado)
     ws = wb.active
