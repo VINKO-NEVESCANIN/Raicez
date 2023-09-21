@@ -18,9 +18,7 @@ rango_columna2_min = 0.0
 rango_columna2_max = float('inf')
 
 
-# Nombres de las columnas
-nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
-                    'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']
+
 
 
 
@@ -36,6 +34,10 @@ def procesar_datos():
     global cajas_rango_columnas  # Para poder acceder a las cajas desde otras funciones
     global df
     global archivo_filtrado
+
+    # Nombres de las columnas
+    nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
+                    'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']
     
 
     archivo = entry_ruta_archivo.get()
@@ -45,13 +47,31 @@ def procesar_datos():
 
     # Leer el archivo de Excel original
     df = pd.read_excel(archivo)
+    print(df.columns)
+    
+    if 'TtarRC_Avg(1)' in df.columns:
+        print("La columna 'TtarRC_Avg(1)' existe en el DataFrame.")
+
+
+    else:
+        print("La columna 'TtarRC_Avg(1)' no existe en el DataFrame.")
+    
     
     # Definir la variable archivo_filtrado
     archivo_filtrado = 'archivo_filtrado.xlsx'
     
-    # Convertir las columnas a valores numéricos
-    for columna in columnas_seleccionadas:
-        df[columna] = pd.to_numeric(df[columna], errors='coerce')
+    # Verificar si las columnas seleccionadas existen en el DataFrame
+    columnas_validas = [col for col in columnas_seleccionadas if col in df.columns]
+    
+    # Verificar si al menos una columna válida está presente
+    if not columnas_validas:
+        print("No se encontraron columnas válidas para el filtrado.")
+        return  # O tomar alguna acción adecuada aquí
+
+    # Convertir las columnas seleccionadas (válidas) a valores numéricos
+    for columna in columnas_validas:
+     df[columna] = pd.to_numeric(df[columna], errors='coerce')
+
 
     # Crear la interfaz gráfica en la ventana principal
     for widget in ventana.winfo_children():
