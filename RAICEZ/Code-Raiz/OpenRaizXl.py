@@ -18,10 +18,6 @@ rango_columna2_min = 0.0
 rango_columna2_max = float('inf')
 
 
-
-
-
-
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(
         filetypes=[('Archivos Excel', '*.xlsx')])
@@ -37,8 +33,7 @@ def procesar_datos():
 
     # Nombres de las columnas
     nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
-                    'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']
-    
+                    'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']  
 
     archivo = entry_ruta_archivo.get()
     columnas_seleccionadas = entry_columnas.get().split(',')
@@ -52,10 +47,8 @@ def procesar_datos():
     if 'TtarRC_Avg(1)' in df.columns:
         print("La columna 'TtarRC_Avg(1)' existe en el DataFrame.")
 
-
     else:
         print("La columna 'TtarRC_Avg(1)' no existe en el DataFrame.")
-    
     
     # Definir la variable archivo_filtrado
     archivo_filtrado = 'archivo_filtrado.xlsx'
@@ -138,8 +131,6 @@ def filtrar_datos():
         # Guardar los datos filtrados en un nuevo archivo de Excel
         df_filtrado.to_excel(archivo_filtrado, index=False)
         
-        
-
         # Mostrar la gráfica de los datos
         plt.plot(df_filtrado['columna1'], df_filtrado['columna2'])
         plt.xlabel('columna1')
