@@ -39,6 +39,7 @@ def procesar_datos():
     columnas_seleccionadas = entry_columnas.get().split(',')
     rango_fechas = pd.date_range(
         start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
+    rango_fechas = pd.date_range(start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
 
     # Leer el archivo de Excel original
     df = pd.read_excel(archivo)
