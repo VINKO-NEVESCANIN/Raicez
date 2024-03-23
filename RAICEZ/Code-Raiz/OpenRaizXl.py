@@ -45,6 +45,10 @@ def procesar_datos():
     df = pd.read_excel(archivo)
     print(df.columns)
     
+    # Obtener los nombres de las columnas del DataFrame
+    nombres_columnas = df.columns.tolist()
+
+    
     if 'TtarRC_Avg(1)' in df.columns:
         print("La columna 'TtarRC_Avg(1)' existe en el DataFrame.")
 
@@ -96,6 +100,7 @@ def procesar_datos():
 
 def filtrar_datos():
     global cajas_rango_columnas  # Para acceder a las cajas desde esta función
+    global df
 
     # Obtener los parámetros ingresados desde la interfaz gráfica
     rangos = []
@@ -105,35 +110,32 @@ def filtrar_datos():
         rango_max_text = caja_max.get()
 
         try:
-            rango_min = float(rango_min_text) if rango_min_text else 0.0
+            rango_min = float(rango_min_text) if rango_min_text else float('-inf')
         except ValueError:
-            rango_min = 0.0
+            rango_min = float('-inf')
 
         try:
-            rango_max = float(
-                rango_max_text) if rango_max_text else float('inf')
+            rango_max = float(rango_max_text) if rango_max_text else float('inf')
         except ValueError:
             rango_max = float('inf')
 
         rangos.append((rango_min, rango_max))
-        
-        
-        
 
     # Filtrar los datos según los rangos de valores
-    for i, (rango_min, rango_max) in enumerate(rangos):
-        columna = f'Columna{i + 1}'
-        df_filtrado = df[(df[columna] >= rango_min) &
-                         (df[columna] <= rango_max)]
-    # Imprimir los nombres de las columnas
-    #print(df_filtrado.columns)
+    for columna in df.select_dtypes(include='number'):
+        for rango_min, rango_max in rangos:
+            df = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
 
-    if 'df_filtrado' in locals():  # Verifica si df_filtrado está definido
+    # Imprimir los nombres de las columnas filtradas
+    print(df.columns)
+    
+    if not df.empty:  # Verificar si el DataFrame filtrado no está vacío
         # Guardar los datos filtrados en un nuevo archivo de Excel
-        df_filtrado.to_excel(archivo_filtrado, index=False)
-        
+        archivo_filtrado = 'archivo_filtrado.xlsx'
+        df.to_excel(archivo_filtrado, index=False)
+
         # Mostrar la gráfica de los datos
-        plt.plot(df_filtrado['columna1'], df_filtrado['columna2'])
+        plt.plot(df['columna1'], df['columna2'])
         plt.xlabel('columna1')
         plt.ylabel('columna2')
         plt.title('Gráfica de columna1 vs columna2')
@@ -141,48 +143,43 @@ def filtrar_datos():
 
         # Generar la gráfica de los datos filtrados
         plt.figure(figsize=(8, 6))
-        plt.plot(df_filtrado['columna1'], label='columna1')
-        plt.plot(df_filtrado['columna2'], label='columna2')
+        plt.plot(df['columna1'], label='columna1')
+        plt.plot(df['columna2'], label='columna2')
         plt.xlabel('Índice')
         plt.ylabel('Valores')
         plt.title('Gráfica de datos filtrados')
         plt.legend()
         plt.grid(True)
-        
+
         # Guardar la gráfica como imagen
         plt.savefig('grafica_datos_filtrados.png')
-        
-    # Resaltar los valores numéricos en el archivo Excel filtrado
-    wb = load_workbook(archivo_filtrado)
-    ws = wb.active
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=2):
-        for cell in row:
-            if cell.value is not None and isinstance(cell.value, (int, float)):
-                if rango_columna1_min <= cell.value <= rango_columna1_max or rango_columna2_min <= cell.value <= rango_columna2_max:
-                    cell.font = Font(bold=True, underline='single')  # Resaltar en negrita y subrayado
+        # Resaltar los valores numéricos en el archivo Excel filtrado
+        wb = load_workbook(archivo_filtrado)
+        ws = wb.active
 
-    # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
-    df_filtrado.to_excel(archivo_filtrado, index=False)
-     
-    # Mostrar los datos con formato de fecha y hora
-    for index, row in df.iterrows():
-        fecha = row['FECHA'] if 'FECHA' in df.columns else ''
-        hora = row['TIMESTAMP'] if 'TIMESTAMP' in df.columns else ''
-        fecha_formateada = fecha.strftime("%Y-%m-%d") if isinstance(fecha, datetime) else ''
-        hora_formateada = hora.strftime("%H:%M:%S") if isinstance(hora, datetime) else ''
-        print(f"Fecha: {fecha_formateada}, Hora: {hora_formateada}")
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=2):
+            for cell in row:
+                if cell.value is not None and isinstance(cell.value, (int, float)):
+                    if rango_columna1_min <= cell.value <= rango_columna1_max or rango_columna2_min <= cell.value <= rango_columna2_max:
+                        cell.font = Font(bold=True, underline='single')  # Resaltar en negrita y subrayado
+
+        # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
+        df.to_excel(archivo_filtrado, index=False)
+
+        # Mostrar mensaje de éxito
+        print("El archivo se ha guardado exitosamente.")
+
+        # Abrir el archivo Excel guardado automáticamente
+        ruta_archivo = os.path.abspath(archivo_filtrado)
+        os.system(f'start {ruta_archivo}')
+
+        # Mostrar un mensaje de éxito
+        tk.messagebox.showinfo('Procesamiento completado', 'Se han seleccionado y guardado los datos correctamente.')
+    else:
+        print("No se encontraron datos que coincidan con los criterios de filtrado.")
 
 
-
-    # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
-    ###df_filtrado.to_excel('print(df.columns).xlsx', index=False)
-    archivo_filtrado = f'archivo_filtrado.xlsx'
-    df.to_excel(archivo_filtrado, index=False)
-    
-    
-    # Mostrar mensaje de éxito
-    print("El archivo se ha guardado exitosamente.")
 
     # Abrir el archivo Excel guardado automáticamente
     ruta_archivo = os.path.abspath(archivo_filtrado)
