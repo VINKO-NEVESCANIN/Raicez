@@ -1,224 +1,130 @@
 import tkinter as tk
-from tkinter import filedialog
-from openpyxl import load_workbook
-from openpyxl.styles import Font
+from tkinter import filedialog, messagebox
 import pandas as pd
-from datetime import datetime
 import os
 import matplotlib.pyplot as plt
-from tkinter import *
+from openpyxl import load_workbook
+from openpyxl.styles import Font
+from datetime import datetime
 
+class DataProcessor:
+    def __init__(self, ventana):
+        self.ventana = ventana
+        self.df = None
+        self.cajas_rango_columnas = []
 
-# Definir cajas de entrada para los rangos de las columnas como variables globales
-cajas_rango_columnas = []
-df = None
-rango_columna1_min = 0.0
-rango_columna1_max = float('inf')
-rango_columna2_min = 0.0
-rango_columna2_max = float('inf')
+    def cargar_archivo(self):
+        ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
+        if ruta_archivo:
+            self.entry_ruta_archivo.delete(0, tk.END)
+            self.entry_ruta_archivo.insert(tk.END, ruta_archivo)
 
-
-def cargar_archivo():
-    ruta_archivo = filedialog.askopenfilename(
-        filetypes=[('Archivos Excel', '*.xlsx')])
-    if ruta_archivo:
-        entry_ruta_archivo.delete(0, tk.END)
-        entry_ruta_archivo.insert(tk.END, ruta_archivo)
-
-
-def procesar_datos():
-    global cajas_rango_columnas  # Para poder acceder a las cajas desde otras funciones
-    global df
-    global archivo_filtrado
-
-    # Nombres de las columnas
-    nombres_columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
-                    'TtarHC_Avg(1)', 'TtarHC_Avg(2)', 'TtarHC_Avg(3)', 'TtarHC_Avg(4)', 'TtarHC_Avg(5)', 'TtarHC_Avg(6)', 'TtarHC_Avg(7)', 'TtarHC_Avg(8)']  
-
-    archivo = entry_ruta_archivo.get()
-    columnas_seleccionadas = entry_columnas.get().split(',')
-    rango_fechas = pd.date_range(
-        start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
-    rango_fechas = pd.date_range(start=entry_fecha_inicio.get(), end=entry_fecha_fin.get())
-
-    # Leer el archivo de Excel original
-    df = pd.read_excel(archivo)
-    print(df.columns)
-    
-    # Obtener los nombres de las columnas del DataFrame
-    nombres_columnas = df.columns.tolist()
-
-    
-    if 'TtarRC_Avg(1)' in df.columns:
-        print("La columna 'TtarRC_Avg(1)' existe en el DataFrame.")
-
-    else:
-        print("La columna 'TtarRC_Avg(1)' no existe en el DataFrame.")
-    
-    # Definir la variable archivo_filtrado
-    archivo_filtrado = 'archivo_filtrado.xlsx'
-    
-    # Verificar si las columnas seleccionadas existen en el DataFrame
-    columnas_validas = [col for col in columnas_seleccionadas if col in df.columns]
-    
-    # Verificar si al menos una columna válida está presente
-    if not columnas_validas:
-        print("No se encontraron columnas válidas para el filtrado.")
-        return  # O tomar alguna acción adecuada aquí
-
-    # Convertir las columnas seleccionadas (válidas) a valores numéricos
-    for columna in columnas_validas:
-     df[columna] = pd.to_numeric(df[columna], errors='coerce')
-
-
-    # Crear la interfaz gráfica en la ventana principal
-    for widget in ventana.winfo_children():
-        widget.destroy()
-
-    
-    # Crear cajas de entrada y etiquetas para cada columna en dos columnas
-    for i in range(0, len(nombres_columnas), 2):
-        for j in range(2):
-            if i + j < len(nombres_columnas):
-                nombre_columna = nombres_columnas[i + j]
-                label = tk.Label(ventana, text=f'Rango para {nombre_columna}:')
-                label.grid(row=i, column=j * 2)
-
-                caja_min = tk.Entry(ventana)
-                caja_max = tk.Entry(ventana)
-
-                caja_min.grid(row=i + 1, column=j * 2)
-                caja_max.grid(row=i + 1, column=j * 2 + 1)
-
-                cajas_rango_columnas.append((caja_min, caja_max))
-
-    # Botón para realizar el filtrado
-    boton_filtrar = tk.Button(ventana, text="Filtrar", command=filtrar_datos)
-    boton_filtrar.grid(row=len(nombres_columnas), column=0, columnspan=2)
-    
-
-
-def filtrar_datos():
-    global cajas_rango_columnas  # Para acceder a las cajas desde esta función
-    global df
-
-    # Obtener los parámetros ingresados desde la interfaz gráfica
-    rangos = []
-
-    for caja_min, caja_max in cajas_rango_columnas:
-        rango_min_text = caja_min.get()
-        rango_max_text = caja_max.get()
+    def procesar_datos(self):
+        archivo = self.entry_ruta_archivo.get()
+        columnas_seleccionadas = self.entry_columnas.get().split(',')
+        rango_fechas = pd.date_range(start=self.entry_fecha_inicio.get(), end=self.entry_fecha_fin.get())
 
         try:
-            rango_min = float(rango_min_text) if rango_min_text else float('-inf')
-        except ValueError:
-            rango_min = float('-inf')
+            self.df = pd.read_excel(archivo)
+            self.crear_interfaz_grafica()
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo cargar el archivo: {str(e)}")
+
+    def crear_interfaz_grafica(self):
+        nombres_columnas = self.df.columns.tolist()
+
+        for widget in self.ventana.winfo_children():
+            widget.destroy()
+
+        for i, nombre_columna in enumerate(nombres_columnas):
+            label = tk.Label(self.ventana, text=f'Rango para {nombre_columna}:')
+            label.grid(row=i, column=0)
+
+            caja_min = tk.Entry(self.ventana)
+            caja_max = tk.Entry(self.ventana)
+
+            caja_min.grid(row=i, column=1)
+            caja_max.grid(row=i, column=2)
+
+            self.cajas_rango_columnas.append((caja_min, caja_max))
+
+        boton_filtrar = tk.Button(self.ventana, text="Filtrar", command=self.filtrar_datos)
+        boton_filtrar.grid(row=len(nombres_columnas), column=0, columnspan=2)
+
+    def filtrar_datos(self):
+        rangos = []
+
+        for caja_min, caja_max in self.cajas_rango_columnas:
+            rango_min_text = caja_min.get()
+            rango_max_text = caja_max.get()
+
+            try:
+                rango_min = float(rango_min_text) if rango_min_text else float('-inf')
+            except ValueError:
+                rango_min = float('-inf')
+
+            try:
+                rango_max = float(rango_max_text) if rango_max_text else float('inf')
+            except ValueError:
+                rango_max = float('inf')
+
+            rangos.append((rango_min, rango_max))
 
         try:
-            rango_max = float(rango_max_text) if rango_max_text else float('inf')
-        except ValueError:
-            rango_max = float('inf')
+            for columna in self.df.select_dtypes(include='number'):
+                for rango_min, rango_max in rangos:
+                    self.df = self.df[(self.df[columna] >= rango_min) & (self.df[columna] <= rango_max)]
 
-        rangos.append((rango_min, rango_max))
+            if not self.df.empty:
+                archivo_filtrado = 'archivo_filtrado.xlsx'
+                self.df.to_excel(archivo_filtrado, index=False)
 
-    # Filtrar los datos según los rangos de valores
-    for columna in df.select_dtypes(include='number'):
-        for rango_min, rango_max in rangos:
-            df = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
+                plt.plot(self.df.iloc[:, 0], self.df.iloc[:, 1])  # Suponiendo que se grafican las primeras dos columnas
+                plt.xlabel('Columna1')
+                plt.ylabel('Columna2')
+                plt.title('Gráfico de datos filtrados')
+                plt.show()
 
-    # Imprimir los nombres de las columnas filtradas
-    print(df.columns)
-    
-    if not df.empty:  # Verificar si el DataFrame filtrado no está vacío
-        # Guardar los datos filtrados en un nuevo archivo de Excel
-        archivo_filtrado = 'archivo_filtrado.xlsx'
-        df.to_excel(archivo_filtrado, index=False)
-
-        # Mostrar la gráfica de los datos
-        plt.plot(df['columna1'], df['columna2'])
-        plt.xlabel('columna1')
-        plt.ylabel('columna2')
-        plt.title('Gráfica de columna1 vs columna2')
-        plt.show()
-
-        # Generar la gráfica de los datos filtrados
-        plt.figure(figsize=(8, 6))
-        plt.plot(df['columna1'], label='columna1')
-        plt.plot(df['columna2'], label='columna2')
-        plt.xlabel('Índice')
-        plt.ylabel('Valores')
-        plt.title('Gráfica de datos filtrados')
-        plt.legend()
-        plt.grid(True)
-
-        # Guardar la gráfica como imagen
-        plt.savefig('grafica_datos_filtrados.png')
-
-        # Resaltar los valores numéricos en el archivo Excel filtrado
-        wb = load_workbook(archivo_filtrado)
-        ws = wb.active
-
-        for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=2):
-            for cell in row:
-                if cell.value is not None and isinstance(cell.value, (int, float)):
-                    if rango_columna1_min <= cell.value <= rango_columna1_max or rango_columna2_min <= cell.value <= rango_columna2_max:
-                        cell.font = Font(bold=True, underline='single')  # Resaltar en negrita y subrayado
-
-        # Guardar el DataFrame seleccionado en un nuevo archivo de Excel
-        df.to_excel(archivo_filtrado, index=False)
-
-        # Mostrar mensaje de éxito
-        print("El archivo se ha guardado exitosamente.")
-
-        # Abrir el archivo Excel guardado automáticamente
-        ruta_archivo = os.path.abspath(archivo_filtrado)
-        os.system(f'start {ruta_archivo}')
-
-        # Mostrar un mensaje de éxito
-        tk.messagebox.showinfo('Procesamiento completado', 'Se han seleccionado y guardado los datos correctamente.')
-    else:
-        print("No se encontraron datos que coincidan con los criterios de filtrado.")
-
-
-
-    # Abrir el archivo Excel guardado automáticamente
-    ruta_archivo = os.path.abspath(archivo_filtrado)
-    os.system(f'start {ruta_archivo}')
-
-    # Mostrar un mensaje de éxito
-    tk.messagebox.showinfo('Procesamiento completado', 'Se han seleccionado y guardado los datos correctamente.')
+                messagebox.showinfo("Procesamiento completado", "Se han seleccionado y guardado los datos correctamente.")
+            else:
+                messagebox.showwarning("Advertencia", "No se encontraron datos que coincidan con los criterios de filtrado.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo filtrar los datos: {str(e)}")
 
 # Crear la ventana principal
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
 ventana.geometry('400x250')
 
+# Crear una instancia de la clase DataProcessor
+procesador_datos = DataProcessor(ventana)
+
 # Etiqueta y campo de entrada para la ruta del archivo
 label_ruta_archivo = tk.Label(ventana, text='Archivo de Excel:')
 label_ruta_archivo.pack()
-entry_ruta_archivo = tk.Entry(ventana, width=40)
-entry_ruta_archivo.pack()
-button_cargar_archivo = tk.Button(ventana, text='Cargar', command=cargar_archivo)
+procesador_datos.entry_ruta_archivo = tk.Entry(ventana, width=40)
+procesador_datos.entry_ruta_archivo.pack()
+button_cargar_archivo = tk.Button(ventana, text='Cargar', command=procesador_datos.cargar_archivo)
 button_cargar_archivo.pack()
 
 # Etiquetas y campos de entrada para la selección de datos
 label_columnas = tk.Label(ventana, text='Columnas seleccionadas (separadas por coma):')
 label_columnas.pack()
-entry_columnas = tk.Entry(ventana, width=40)
-entry_columnas.pack()
+procesador_datos.entry_columnas = tk.Entry(ventana, width=40)
+procesador_datos.entry_columnas.pack()
 
 label_fecha_inicio = tk.Label(ventana, text='Fecha de inicio:')
 label_fecha_inicio.pack()
-entry_fecha_inicio = tk.Entry(ventana, width=40)
-entry_fecha_inicio.pack()
+procesador_datos.entry_fecha_inicio = tk.Entry(ventana, width=40)
+procesador_datos.entry_fecha_inicio.pack()
 
 label_fecha_fin = tk.Label(ventana, text='Fecha de fin:')
 label_fecha_fin.pack()
-entry_fecha_fin = tk.Entry(ventana, width=40)
-entry_fecha_fin.pack()
+procesador_datos.entry_fecha_fin = tk.Entry(ventana, width=40)
+procesador_datos.entry_fecha_fin.pack()
 
 # Botón para procesar los datos
-button_procesar = tk.Button(ventana, text='Procesar', command=procesar_datos)
+button_procesar = tk.Button(ventana, text='Procesar', command=procesador_datos.procesar_datos)
 button_procesar.pack()
 
 # Iniciar el bucle principal de la ventana
