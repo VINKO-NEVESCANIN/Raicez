@@ -7,11 +7,11 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from datetime import datetime
 
-class DataProcessor:
-    def __init__(self, ventana):
-        self.ventana = ventana
-        self.df = None
-        self.cajas_rango_columnas = []
+import tkinter as tk
+from tkinter import filedialog
+import pandas as pd
+import os
+
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
     if ruta_archivo:
@@ -19,29 +19,26 @@ def cargar_archivo():
         entry_ruta_archivo.insert(tk.END, ruta_archivo)
 
 def procesar_datos():
-    global cajas_rango_columnas
     archivo = entry_ruta_archivo.get()
     columnas_seleccionadas = entry_columnas.get().split(',')
     rangos_columnas = []
 
     # Crear cajas de entrada y etiquetas para cada columna en dos columnas
-    # Dentro de la función procesar_datos(), donde se crean las cajas de entrada para los rangos de columnas
-    for i, nombre_columna in enumerate(columnas_seleccionadas):
-        label = tk.Label(ventana, text=f'Rango para {nombre_columna}:')
-        label.grid(row=i * 2, column=0, columnspan=2)
+    for i, columna in enumerate(columnas_seleccionadas):
+        label = tk.Label(ventana, text=f'Rango para {columna}:')
+        label.grid(row=5 + i, column=0)
 
         caja_min = tk.Entry(ventana)
         caja_max = tk.Entry(ventana)
 
-        caja_min.grid(row=i * 2 + 1, column=0)
-        caja_max.grid(row=i * 2 + 1, column=1)
+        caja_min.grid(row=5 + i, column=1)
+        caja_max.grid(row=5 + i, column=2)
 
-        cajas_rango_columnas.append((caja_min, caja_max))
+        rangos_columnas.append((caja_min, caja_max))
 
     # Botón para realizar el filtrado
-    boton_filtrar = tk.Button(ventana, text="Filtrar", command=filtrar_datos)
-    boton_filtrar.grid(row=len(columnas_seleccionadas) * 2, column=0, columnspan=2)
-
+    boton_filtrar = tk.Button(ventana, text="Filtrar", command=lambda: filtrar_datos(archivo, columnas_seleccionadas, rangos_columnas))
+    boton_filtrar.grid(row=5 + len(columnas_seleccionadas), column=0, columnspan=3)
 
 def filtrar_datos(archivo, columnas_seleccionadas, rangos_columnas):
     df = pd.read_excel(archivo)
