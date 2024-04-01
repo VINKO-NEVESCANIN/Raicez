@@ -41,14 +41,25 @@ def procesar_datos():
     boton_filtrar.grid(row=5 + len(columnas_seleccionadas), column=0, columnspan=3)
 
 def filtrar_datos(archivo, columnas_seleccionadas, rangos_columnas):
+    # Leer el archivo Excel
     df = pd.read_excel(archivo)
+    
+    # Convertir las columnas seleccionadas a valores numéricos
+    for columna in columnas_seleccionadas:
+        df[columna] = pd.to_numeric(df[columna], errors='coerce')  # Convierte a NaN si no puede convertir
+
+    # Filtrar los datos según los rangos de valores
     for columna, (caja_min, caja_max) in zip(columnas_seleccionadas, rangos_columnas):
+        # Convertir las cadenas a valores numéricos
         rango_min = float(caja_min.get() or 0)
         rango_max = float(caja_max.get() or float('inf'))
+        # Filtrar los datos según los rangos de valores
         df = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
 
     # Procesar el DataFrame filtrado...
     print(df)
+
+
 
 # Crear la ventana principal
 ventana = tk.Tk()
