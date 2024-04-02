@@ -40,24 +40,36 @@ def procesar_datos():
     boton_filtrar = tk.Button(ventana, text="Filtrar", command=lambda: filtrar_datos(archivo, columnas_seleccionadas, rangos_columnas))
     boton_filtrar.grid(row=5 + len(columnas_seleccionadas), column=0, columnspan=3)
 
-def filtrar_datos(archivo, columnas_seleccionadas, rangos_columnas):
-    # Leer el archivo Excel
-    df = pd.read_excel(archivo)
-    
-    # Convertir las columnas seleccionadas a valores numéricos
-    for columna in columnas_seleccionadas:
-        df[columna] = pd.to_numeric(df[columna], errors='coerce')  # Convierte a NaN si no puede convertir
+import os
 
-    # Filtrar los datos según los rangos de valores
+def filtrar_datos(archivo, columnas_seleccionadas, rangos_columnas):
+    df = pd.read_excel(archivo)
     for columna, (caja_min, caja_max) in zip(columnas_seleccionadas, rangos_columnas):
-        # Convertir las cadenas a valores numéricos
         rango_min = float(caja_min.get() or 0)
         rango_max = float(caja_max.get() or float('inf'))
-        # Filtrar los datos según los rangos de valores
+        
+        # Convertir la columna a números flotantes
+        df[columna] = pd.to_numeric(df[columna], errors='coerce')
+        
+        # Filtrar los datos
         df = df[(df[columna] >= rango_min) & (df[columna] <= rango_max)]
 
+    # Obtener el nombre del archivo original sin extensión
+    nombre_archivo = os.path.splitext(os.path.basename(archivo))[0]
+
+    # Crear un nombre para el archivo de salida con los datos filtrados
+    archivo_salida = f'{nombre_archivo}_datos_filtrados.xlsx'
+
+    # Guardar el DataFrame filtrado en un nuevo archivo Excel
+    df.to_excel(archivo_salida, index=False)
+    print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
+
+    # Abrir automáticamente el archivo Excel generado
+    os.startfile(archivo_salida)
+
     # Procesar el DataFrame filtrado...
-    print(df)
+
+
 
 
 
