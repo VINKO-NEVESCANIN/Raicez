@@ -5,6 +5,9 @@ import pandas as pd
 import os
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
+from openpyxl.styles import Font
+
+
 
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
@@ -42,16 +45,21 @@ def filtrar_datos(archivo, columnas_seleccionadas):
     ws = wb.active
     fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
 
-    for col_idx, column in enumerate(df.columns, 1):
-        if column in columnas_seleccionadas:
-            idx = columnas_seleccionadas.index(column)
-            for row_idx in range(2, ws.max_row + 1):
-                if conditions[idx][1][row_idx - 2]:
-                    ws.cell(row=row_idx, column=col_idx).fill = fill
+# Aplicar formato condicional solo a las columnas seleccionadas
+    for idx, columna in enumerate(columnas_seleccionadas, 1):
+        col_idx = df.columns.get_loc(columna) + 1  # Obtener el índice de la columna en el DataFrame
+        fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')  # Rojo
 
-    wb.save(archivo_salida)
-    print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
-    os.startfile(archivo_salida)
+    # Aplicar formato condicional solo a las celdas que cumplen la condición
+    for row_idx in range(2, ws.max_row + 1):
+        if conditions[idx - 1][1][row_idx - 2]:
+            ws.cell(row=row_idx, column=col_idx).fill = fill
+            ws.cell(row=row_idx, column=col_idx).font = Font(bold=True)
+
+            # Guardar el archivo y mostrar mensaje
+            wb.save(archivo_salida)
+            print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
+            os.startfile(archivo_salida)
 
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
