@@ -1,13 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter.simpledialog import askstring
+
 import pandas as pd
 import os
 from openpyxl import load_workbook
-from openpyxl.styles import PatternFill
-from openpyxl.styles import Font
-
-
+from openpyxl.styles import PatternFill, Font
 
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
@@ -20,22 +18,32 @@ def procesar_datos():
     if archivo:
         columnas_seleccionadas = entry_columnas.get().split(',')
         if columnas_seleccionadas:
-            filtrar_datos(archivo, columnas_seleccionadas)
+            mismo_valor = messagebox.askyesno("Mismo valor", "¿Desea ingresar los mismos valores para todos los mínimos y máximos?")
+            if mismo_valor:
+                rango_min = float(askstring("Input", "Introduce el valor mínimo para todas las columnas:"))
+                rango_max = float(askstring("Input", "Introduce el valor máximo para todas las columnas:"))
+                filtrar_datos(archivo, columnas_seleccionadas, rango_min, rango_max)
+            else:
+                filtrar_datos(archivo, columnas_seleccionadas)
         else:
             messagebox.showinfo("Información", "Por favor, introduce las columnas.")
     else:
         messagebox.showinfo("Información", "Por favor, carga un archivo.")
 
-def filtrar_datos(archivo, columnas_seleccionadas):
+def filtrar_datos(archivo, columnas_seleccionadas, rango_min=None, rango_max=None):
     df = pd.read_excel(archivo)
-    conditions = []
+    condiciones = {}
 
     for columna in columnas_seleccionadas:
-        rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
-        rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
+        if rango_min is not None and rango_max is not None:
+            condiciones[columna] = (rango_min, rango_max)
+        else:
+            rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
+            rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
+            condiciones[columna] = (rango_min, rango_max)
+        
+        # Convertir la columna a números flotantes
         df[columna] = pd.to_numeric(df[columna], errors='coerce')
-        condition = (df[columna] < rango_min) | (df[columna] > rango_max)
-        conditions.append((columna, condition))
 
     nombre_archivo = os.path.splitext(os.path.basename(archivo))[0]
     archivo_salida = f'{nombre_archivo}_datos_filtrados.xlsx'
@@ -45,21 +53,16 @@ def filtrar_datos(archivo, columnas_seleccionadas):
     ws = wb.active
     fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
 
-# Aplicar formato condicional solo a las columnas seleccionadas
-    for idx, columna in enumerate(columnas_seleccionadas, 1):
-        col_idx = df.columns.get_loc(columna) + 1  # Obtener el índice de la columna en el DataFrame
-        fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')  # Rojo
+    for col_idx, column in enumerate(df.columns, 1):
+        if column in columnas_seleccionadas:
+            for row_idx, valor in enumerate(df[column], start=2):
+                if isinstance(valor, (int, float)) and (valor < condiciones[column][0] or valor > condiciones[column][1]):
+                    ws.cell(row=row_idx, column=col_idx).fill = fill
+                    ws.cell(row=row_idx, column=col_idx).font = Font(bold=True)
 
-    # Aplicar formato condicional solo a las celdas que cumplen la condición
-    for row_idx in range(2, ws.max_row + 1):
-        if conditions[idx - 1][1][row_idx - 2]:
-            ws.cell(row=row_idx, column=col_idx).fill = fill
-            ws.cell(row=row_idx, column=col_idx).font = Font(bold=True)
-
-            # Guardar el archivo y mostrar mensaje
-            wb.save(archivo_salida)
-            print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
-            os.startfile(archivo_salida)
+    wb.save(archivo_salida)
+    print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
+    os.startfile(archivo_salida)
 
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
