@@ -55,10 +55,12 @@ def filtrar_datos(archivo, columnas_seleccionadas, rango_min=None, rango_max=Non
 
     for col_idx, column in enumerate(df.columns, 1):
         if column in columnas_seleccionadas:
+            idx = columnas_seleccionadas.index(column)
             for row_idx, valor in enumerate(df[column], start=2):
                 if isinstance(valor, (int, float)) and (valor < condiciones[column][0] or valor > condiciones[column][1]):
                     ws.cell(row=row_idx, column=col_idx).fill = fill
                     ws.cell(row=row_idx, column=col_idx).font = Font(bold=True)
+
 
     wb.save(archivo_salida)
     print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
