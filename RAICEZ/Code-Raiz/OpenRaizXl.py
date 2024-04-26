@@ -18,29 +18,35 @@ def procesar_datos():
     if archivo:
         columnas_seleccionadas = entry_columnas.get().split(',')
         if columnas_seleccionadas:
-            valor_minimo = float(askstring("Input", f"Ingrese el valor mínimo para todas las columnas:"))
-            valor_maximo = float(askstring("Input", f"Ingrese el valor máximo para todas las columnas:"))
-            filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
+            if askstring("Input", "¿Desea ingresar manualmente los valores para todas las columnas? (s/n)") == 's':
+                valor_minimo = float(askstring("Input", "Ingrese el valor mínimo para todas las columnas:"))
+                valor_maximo = float(askstring("Input", "Ingrese el valor máximo para todas las columnas:"))
+                filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
+            else:
+                filtrar_datos(archivo, columnas_seleccionadas)
         else:
             messagebox.showinfo("Información", "Por favor, introduce las columnas.")
     else:
         messagebox.showinfo("Información", "Por favor, carga un archivo.")
 
 
-def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo):
+
+def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
     df = pd.read_excel(archivo)
     conditions = []
 
-    for columna in columnas_seleccionadas:
-        if askstring("Input", f"Desea ingresar valores manualmente para la columna {columna}? (s/n)") == 's':
+    if valor_minimo is not None and valor_maximo is not None:
+        for columna in columnas_seleccionadas:
+            df[columna] = pd.to_numeric(df[columna], errors='coerce')
+            condition = (df[columna] < valor_minimo) | (df[columna] > valor_maximo)
+            conditions.append((columna, condition))
+    else:
+        for columna in columnas_seleccionadas:
             rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
             rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
-        else:
-            rango_min = valor_minimo
-            rango_max = valor_maximo
-        df[columna] = pd.to_numeric(df[columna], errors='coerce')
-        condition = (df[columna] < rango_min) | (df[columna] > rango_max)
-        conditions.append((columna, condition))
+            df[columna] = pd.to_numeric(df[columna], errors='coerce')
+            condition = (df[columna] < rango_min) | (df[columna] > rango_max)
+            conditions.append((columna, condition))
 
     nombre_archivo = os.path.splitext(os.path.basename(archivo))[0]
     archivo_salida = f'{nombre_archivo}_datos_filtrados.xlsx'
