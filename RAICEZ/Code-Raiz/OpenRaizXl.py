@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter.simpledialog import askstring
-
 import pandas as pd
 import os
 from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font
+from openpyxl.styles import PatternFill
+import matplotlib.pyplot as plt
 
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
@@ -18,32 +18,29 @@ def procesar_datos():
     if archivo:
         columnas_seleccionadas = entry_columnas.get().split(',')
         if columnas_seleccionadas:
-            mismo_valor = messagebox.askyesno("Mismo valor", "¿Desea ingresar los mismos valores para todos los mínimos y máximos?")
-            if mismo_valor:
-                rango_min = float(askstring("Input", "Introduce el valor mínimo para todas las columnas:"))
-                rango_max = float(askstring("Input", "Introduce el valor máximo para todas las columnas:"))
-                filtrar_datos(archivo, columnas_seleccionadas, rango_min, rango_max)
-            else:
-                filtrar_datos(archivo, columnas_seleccionadas)
+            valor_minimo = float(askstring("Input", f"Ingrese el valor mínimo para todas las columnas:"))
+            valor_maximo = float(askstring("Input", f"Ingrese el valor máximo para todas las columnas:"))
+            filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
         else:
             messagebox.showinfo("Información", "Por favor, introduce las columnas.")
     else:
         messagebox.showinfo("Información", "Por favor, carga un archivo.")
 
-def filtrar_datos(archivo, columnas_seleccionadas, rango_min=None, rango_max=None):
+
+def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo):
     df = pd.read_excel(archivo)
-    condiciones = {}
+    conditions = []
 
     for columna in columnas_seleccionadas:
-        if rango_min is not None and rango_max is not None:
-            condiciones[columna] = (rango_min, rango_max)
-        else:
+        if askstring("Input", f"Desea ingresar valores manualmente para la columna {columna}? (s/n)") == 's':
             rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
             rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
-            condiciones[columna] = (rango_min, rango_max)
-        
-        # Convertir la columna a números flotantes
+        else:
+            rango_min = valor_minimo
+            rango_max = valor_maximo
         df[columna] = pd.to_numeric(df[columna], errors='coerce')
+        condition = (df[columna] < rango_min) | (df[columna] > rango_max)
+        conditions.append((columna, condition))
 
     nombre_archivo = os.path.splitext(os.path.basename(archivo))[0]
     archivo_salida = f'{nombre_archivo}_datos_filtrados.xlsx'
@@ -56,15 +53,35 @@ def filtrar_datos(archivo, columnas_seleccionadas, rango_min=None, rango_max=Non
     for col_idx, column in enumerate(df.columns, 1):
         if column in columnas_seleccionadas:
             idx = columnas_seleccionadas.index(column)
-            for row_idx, valor in enumerate(df[column], start=2):
-                if isinstance(valor, (int, float)) and (valor < condiciones[column][0] or valor > condiciones[column][1]):
+            for row_idx in range(2, ws.max_row + 1):
+                if conditions[idx][1][row_idx - 2]:
                     ws.cell(row=row_idx, column=col_idx).fill = fill
-                    ws.cell(row=row_idx, column=col_idx).font = Font(bold=True)
-
 
     wb.save(archivo_salida)
     print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
     os.startfile(archivo_salida)
+
+    # Generar gráfico de barras
+    generar_grafico(df[columnas_seleccionadas])
+
+
+def generar_grafico(df):
+    # Calcular el porcentaje de valores adquiridos
+    porcentajes = df.sum() / len(df) * 100
+
+    # Crear la figura y los ejes
+    fig, ax = plt.subplots()
+
+    # Crear el gráfico de barras
+    porcentajes.plot(kind='bar', ax=ax)
+
+    # Configurar etiquetas y título
+    ax.set_ylabel('Porcentaje')
+    ax.set_xlabel('Columnas')
+    ax.set_title('Porcentaje de valores adquiridos por columna')
+
+    # Mostrar el gráfico
+    plt.show()
 
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
