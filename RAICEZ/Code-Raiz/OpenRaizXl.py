@@ -18,7 +18,7 @@ def procesar_datos():
     if archivo:
         columnas_seleccionadas = entry_columnas.get().split(',')
         if columnas_seleccionadas:
-            if askstring("Input", "¿Desea ingresar manualmente los valores para todas las columnas? (s/n)") == 's':
+            if askstring("Input", "¿Desea ingresar los mismos valores para todas las columnas? (s/n)") == 's':
                 valor_minimo = float(askstring("Input", "Ingrese el valor mínimo para todas las columnas:"))
                 valor_maximo = float(askstring("Input", "Ingrese el valor máximo para todas las columnas:"))
                 filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
@@ -67,26 +67,30 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
     os.startfile(archivo_salida)
 
-    # Generar gráfico de barras
-    generar_grafico(df[columnas_seleccionadas])
+    # Generar gráfico de barras con las horas como referencia
+    generar_grafico(df, columnas_seleccionadas, valor_minimo, valor_maximo)
 
 
-def generar_grafico(df):
-    # Calcular el porcentaje de valores adquiridos
-    porcentajes = df.sum() / len(df) * 100
 
-    # Crear la figura y los ejes
-    fig, ax = plt.subplots()
+def generar_grafico(df, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Filtrar el DataFrame según los valores mínimos y máximos, si se proporcionan
+    if valor_minimo is not None and valor_maximo is not None:
+        df_filtrado = df[(df[columnas_seleccionadas] >= valor_minimo) & (df[columnas_seleccionadas] <= valor_maximo)]
+    else:
+        df_filtrado = df
+
+    # Agrupar por hora y contar la cantidad de valores fuera de rango para cada hora
+    horas = df_filtrado['TIMESTAMP']
+    counts = df_filtrado[columnas_seleccionadas].apply(lambda x: x[(x < valor_minimo) | (x > valor_maximo)].count(), axis=1)
+    counts = counts.groupby(horas).sum()
 
     # Crear el gráfico de barras
-    porcentajes.plot(kind='bar', ax=ax)
+    counts.plot(kind='bar', ax=ax)
+    ax.set_xlabel('TIMESTAMP')
+    ax.set_ylabel('Cantidad de valores fuera de rango')
 
-    # Configurar etiquetas y título
-    ax.set_ylabel('Porcentaje')
-    ax.set_xlabel('Columnas')
-    ax.set_title('Porcentaje de valores adquiridos por columna')
-
-    # Mostrar el gráfico
     plt.show()
 
 ventana = tk.Tk()
