@@ -18,7 +18,7 @@ def procesar_datos():
     if archivo:
         columnas_seleccionadas = entry_columnas.get().split(',')
         if columnas_seleccionadas:
-            if askstring("Input", "¿Desea ingresar los mismos valores para todas las columnas? (s/n)") == 's':
+            if askstring("Input", "¿Desea ingresar los mismos valores para todas las columnas? (s/n)").lower() == 's':
                 valor_minimo = float(askstring("Input", "Ingrese el valor mínimo para todas las columnas:"))
                 valor_maximo = float(askstring("Input", "Ingrese el valor máximo para todas las columnas:"))
                 filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
@@ -71,27 +71,37 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     generar_grafico(df, columnas_seleccionadas, valor_minimo, valor_maximo)
 
 
-
 def generar_grafico(df, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Filtrar el DataFrame según los valores mínimos y máximos, si se proporcionan
+        # Filtrar el DataFrame según los valores mínimos y máximos, si se proporcionan
     if valor_minimo is not None and valor_maximo is not None:
-        df_filtrado = df[(df[columnas_seleccionadas] >= valor_minimo) & (df[columnas_seleccionadas] <= valor_maximo)]
+        # Inicializar la condición como True
+        condicion = True
+        for columna in columnas_seleccionadas:
+            # Aplicar la condición de filtrado a cada columna
+            condicion_columna = (df[columna] < valor_minimo) | (df[columna] > valor_maximo)
+            # Actualizar la condición con la conjunción de la condición actual y la nueva condición de la columna
+            condicion &= condicion_columna
+        # Aplicar la condición de filtrado al DataFrame
+        df_filtrado = df[condicion]
     else:
         df_filtrado = df
 
-    # Agrupar por hora y contar la cantidad de valores fuera de rango para cada hora
-    horas = df_filtrado['TIMESTAMP']
-    counts = df_filtrado[columnas_seleccionadas].apply(lambda x: x[(x < valor_minimo) | (x > valor_maximo)].count(), axis=1)
-    counts = counts.groupby(horas).sum()
+
+    # Calcular el porcentaje de error promedio por hora
+    df['Porcentaje_Error'] = df_filtrado[columnas_seleccionadas].apply(lambda x: x[(x < valor_minimo) | (x > valor_maximo)].count() / len(x), axis=1)
+    porcentaje_promedio_por_hora = df.groupby('TIMESTAMP')['Porcentaje_Error'].mean()
+
 
     # Crear el gráfico de barras
-    counts.plot(kind='bar', ax=ax)
-    ax.set_xlabel('TIMESTAMP')
-    ax.set_ylabel('Cantidad de valores fuera de rango')
+    porcentaje_promedio_por_hora.plot(kind='bar', ax=ax)
+    ax.set_xlabel('Hora del Día')
+    ax.set_ylabel('Porcentaje de Error Promedio')
 
     plt.show()
+
+
 
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
