@@ -70,38 +70,53 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     # Generar gráfico de barras con las horas como referencia
     generar_grafico(df, columnas_seleccionadas, valor_minimo, valor_maximo)
 
-
 def generar_grafico(df, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
     fig, ax = plt.subplots(figsize=(10, 6))
 
-        # Filtrar el DataFrame según los valores mínimos y máximos, si se proporcionan
+    # Convertir el índice del DataFrame a formato de fecha y hora si no está en ese formato
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        try:
+            df.index = pd.to_datetime(df.index)
+        except ValueError:
+            print("Error: No se puede convertir el índice a formato de fecha y hora.")
+            return
+
+    # Filtrar el DataFrame según los valores mínimos y máximos, si se proporcionan
     if valor_minimo is not None and valor_maximo is not None:
-        # Inicializar la condición como True
-        condicion = True
-        for columna in columnas_seleccionadas:
-            # Aplicar la condición de filtrado a cada columna
-            condicion_columna = (df[columna] < valor_minimo) | (df[columna] > valor_maximo)
-            # Actualizar la condición con la conjunción de la condición actual y la nueva condición de la columna
-            condicion &= condicion_columna
+        # Aplicar la condición de filtrado a cada columna
+        condicion_columna = ((df[columnas_seleccionadas] < valor_minimo) | (df[columnas_seleccionadas] > valor_maximo)).any(axis=1)
         # Aplicar la condición de filtrado al DataFrame
-        df_filtrado = df[condicion]
+        df_filtrado = df[condicion_columna]
     else:
         df_filtrado = df
 
+    # Calcular el porcentaje de error promedio por hora si hay datos en el DataFrame filtrado
+    if not df_filtrado.empty:
+        porcentaje_error = df_filtrado[columnas_seleccionadas].apply(lambda x: x[(x < valor_minimo) | (x > valor_maximo)].count() / len(x), axis=1)
+        df_filtrado.loc[:, 'Porcentaje_Error'] = porcentaje_error
+        try:
+            porcentaje_promedio_por_hora = df_filtrado.groupby(df_filtrado.index.hour)['Porcentaje_Error'].mean()
+        except AttributeError:
+            print("Error: El índice del DataFrame no tiene un atributo 'hour'.")
+            return
 
-    # Calcular el porcentaje de error promedio por hora
-    df['Porcentaje_Error'] = df_filtrado[columnas_seleccionadas].apply(lambda x: x[(x < valor_minimo) | (x > valor_maximo)].count() / len(x), axis=1)
-    porcentaje_promedio_por_hora = df.groupby('TIMESTAMP')['Porcentaje_Error'].mean()
+        # Crear el gráfico de líneas suavizado
+        porcentaje_promedio_por_hora.plot(kind='line', ax=ax, marker='o')
+        ax.set_xlabel('Hora del Día')
+        ax.set_ylabel('Porcentaje de Error Promedio')
+        ax.set_title('Porcentaje de Error Promedio por Hora')
+
+        plt.show()
+    else:
+        print("El DataFrame filtrado está vacío. No se pueden generar gráficos.")
 
 
-    # Crear el gráfico de barras
-    porcentaje_promedio_por_hora.plot(kind='bar', ax=ax)
-    ax.set_xlabel('Hora del Día')
-    ax.set_ylabel('Porcentaje de Error Promedio')
-
-    plt.show()
-
-
+# Ejemplo de uso
+# Suponiendo que tienes un DataFrame 'df' con datos y las columnas seleccionadas
+# columnas_seleccionadas = ['Columna1', 'Columna2', 'Columna3']
+# valor_minimo = 0
+# valor_maximo = 100
+# generar_grafico(df, columnas_seleccionadas, valor_minimo, valor_maximo)
 
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
