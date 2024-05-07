@@ -40,21 +40,21 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     if valor_minimo is not None and valor_maximo is not None:
         for columna in columnas_seleccionadas:
             df[columna] = pd.to_numeric(df[columna], errors='coerce')
-            condition = (df[columna] < valor_minimo - epsilon) | (df[columna] > valor_maximo + epsilon)
+            condition = (df[columna] < valor_minimo ) | (df[columna] > valor_maximo + epsilon)
             conditions.append((columna, condition))
             print(f"Límites para la columna {columna}: Mínimo = {valor_minimo}, Máximo = {valor_maximo}")
             print(f"Valores fuera de rango para la columna {columna}:")
-            print(df[columna][(df[columna] < valor_minimo - epsilon) | (df[columna] > valor_maximo + epsilon)])
+            print(df[columna][(df[columna] < valor_minimo ) | (df[columna] > valor_maximo + epsilon)])
     else:
         for columna in columnas_seleccionadas:
             rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
             rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
             df[columna] = pd.to_numeric(df[columna], errors='coerce')
-            condition = (df[columna] < rango_min - epsilon) | (df[columna] > rango_max + epsilon)
+            condition = (df[columna] < rango_min ) | (df[columna] > rango_max + epsilon)
             conditions.append((columna, condition))
             print(f"Límites para la columna {columna}: Mínimo = {rango_min}, Máximo = {rango_max}")
             print(f"Valores fuera de rango para la columna {columna}:")
-            print(df[columna][(df[columna] < rango_min - epsilon) | (df[columna] > rango_max + epsilon)])
+            print(df[columna][(df[columna] < rango_min ) | (df[columna] > rango_max + epsilon)])
 
     # Resto del código de filtrado y generación de gráficos...
 
