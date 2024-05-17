@@ -8,6 +8,7 @@ from openpyxl.styles import PatternFill
 import matplotlib.pyplot as plt
 
 epsilon = 1.001  # Valor pequeño para ajustar los límites
+
 def cargar_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos Excel', '*.xlsx')])
     if ruta_archivo:
@@ -34,30 +35,24 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     df = pd.read_excel(archivo)
     conditions = []
 
-    # Ajustar los límites para que no se incluyan los valores exactos
-    ##epsilon = 0.001  # Valor pequeño para ajustar los límites
-
     if valor_minimo is not None and valor_maximo is not None:
         for columna in columnas_seleccionadas:
             df[columna] = pd.to_numeric(df[columna], errors='coerce')
-            condition = (df[columna] < valor_minimo ) | (df[columna] > valor_maximo + epsilon)
+            condition = (df[columna] < valor_minimo) | (df[columna] > valor_maximo + epsilon)
             conditions.append((columna, condition))
             print(f"Límites para la columna {columna}: Mínimo = {valor_minimo}, Máximo = {valor_maximo}")
             print(f"Valores fuera de rango para la columna {columna}:")
-            print(df[columna][(df[columna] < valor_minimo ) | (df[columna] > valor_maximo + epsilon)])
+            print(df[columna][condition])
     else:
         for columna in columnas_seleccionadas:
             rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
             rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
             df[columna] = pd.to_numeric(df[columna], errors='coerce')
-            condition = (df[columna] < rango_min ) | (df[columna] > rango_max + epsilon)
+            condition = (df[columna] < rango_min) | (df[columna] > rango_max + epsilon)
             conditions.append((columna, condition))
             print(f"Límites para la columna {columna}: Mínimo = {rango_min}, Máximo = {rango_max}")
             print(f"Valores fuera de rango para la columna {columna}:")
-            print(df[columna][(df[columna] < rango_min ) | (df[columna] > rango_max + epsilon)])
-
-    # Resto del código de filtrado y generación de gráficos...
-
+            print(df[columna][condition])
 
     nombre_archivo = os.path.splitext(os.path.basename(archivo))[0]
     archivo_salida = f'{nombre_archivo}_datos_filtrados.xlsx'
@@ -78,49 +73,39 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     print(f"Los datos filtrados se han guardado en '{archivo_salida}'")
     os.startfile(archivo_salida)
 
-    # Generar gráfico para cada columna seleccionada
-    for columna in columnas_seleccionadas:
-        generar_grafico(df, columna, valor_minimo, valor_maximo)
+    # Generar gráfico para las columnas seleccionadas
+    generar_grafico(df, columnas_seleccionadas, valor_minimo, valor_maximo)
 
+    print("Columnas disponibles en el DataFrame:", df.columns)
 
-def generar_grafico(df, columna, valor_minimo=None, valor_maximo=None):
+def generar_grafico(df, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
     fig, ax = plt.subplots(figsize=(10, 6))
-
-    # Convertir el índice del DataFrame a formato de fecha y hora si no está en ese formato
-    if not pd.api.types.is_datetime64_any_dtype(df.index):
-        try:
-            df.index = pd.to_datetime(df.index)
-        except ValueError:
-            print("Error: No se puede convertir el índice a formato de fecha y hora.")
-            return
-
-    # Filtrar el DataFrame según los valores mínimos y máximos, si se proporcionan
-    if valor_minimo is not None and valor_maximo is not None:
-        # Ajustar los límites para que no se incluyan los valores exactos
-        condition = (df[columna] <= valor_minimo - epsilon) | (df[columna] >= valor_maximo + epsilon)
-        df_filtrado = df[condition]
-
-    else:
-        df_filtrado = df
-
-    # Calcular el porcentaje de error o el promedio de valores fuera de rango por hora
-    if not df_filtrado.empty:
-        if askstring("Input", "¿Desea visualizar los datos en términos de porcentaje de error o promedio de valores fuera de rango? (porcentaje/promedio)").lower() == 'porcentaje':
-            porcentaje_error = df_filtrado[columna].apply(lambda x: 1 if (x <= valor_minimo or x >= valor_maximo) else 0).groupby(df_filtrado.index.hour).mean()
-            porcentaje_error.plot(kind='line', ax=ax, marker='o')
-            ax.set_ylabel('Porcentaje de Error')
-            ax.set_title(f'Porcentaje de Error para la columna {columna}')
+    
+    porcentajes_error = []
+    for columna in columnas_seleccionadas:
+        if columna in df.columns:
+            if valor_minimo is not None and valor_maximo is not None:
+                condition = (df[columna] < valor_minimo) | (df[columna] > valor_maximo)
+                porcentaje = df[condition][columna].count() / df[columna].count() * 100
+            else:
+                porcentaje = 0
+            
+            if porcentaje == 0:
+                print(f"No hay datos fuera de rango para la columna {columna}. No se puede generar la gráfica.")
+            
+            porcentajes_error.append(porcentaje)
         else:
-            promedio_por_hora = df_filtrado.groupby(df_filtrado.index.hour)[columna].mean()
-            promedio_por_hora.plot(kind='line', ax=ax, marker='o')
-            ax.set_ylabel('Valor Promedio')
-            ax.set_title(f'Promedio de Valores para la columna {columna}')
+            print(f"Columna {columna} no encontrada en el DataFrame.")
+            porcentajes_error.append(0)
+    
+    ax.bar(columnas_seleccionadas, porcentajes_error, color='skyblue')
+    ax.set_ylabel('Porcentaje de Error')
+    ax.set_title('Porcentaje de Error para las Columnas Seleccionadas')
+    ax.set_xlabel('Columnas')
 
-        ax.set_xlabel('Hora del Día')
-        plt.show()
-    else:
-        print(f"No hay datos fuera de rango para la columna {columna}. No se puede generar la gráfica.")
-
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
 
 ventana = tk.Tk()
 ventana.title('Selección de datos de Excel')
