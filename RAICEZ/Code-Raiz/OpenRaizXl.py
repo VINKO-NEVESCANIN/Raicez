@@ -18,7 +18,7 @@ def cargar_archivo():
 def procesar_datos():
     archivo = entry_ruta_archivo.get()
     if archivo:
-        columnas_seleccionadas = entry_columnas.get().split(',')
+        columnas_seleccionadas = [col.strip() for col in entry_columnas.get().split(',')]
         if columnas_seleccionadas:
             if askstring("Input", "¿Desea ingresar los mismos valores para todas las columnas? (s/n)").lower() == 's':
                 valor_minimo = float(askstring("Input", "Ingrese el valor mínimo para todas las columnas:"))
@@ -74,25 +74,18 @@ def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maxi
     os.startfile(archivo_salida)
 
     # Generar gráfico para las columnas seleccionadas
-    generar_grafico(df, columnas_seleccionadas, valor_minimo, valor_maximo)
+    generar_grafico(df, columnas_seleccionadas, conditions)
 
     print("Columnas disponibles en el DataFrame:", df.columns)
 
-def generar_grafico(df, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
+def generar_grafico(df, columnas_seleccionadas, conditions):
     fig, ax = plt.subplots(figsize=(10, 6))
     
     porcentajes_error = []
-    for columna in columnas_seleccionadas:
+    for idx, columna in enumerate(columnas_seleccionadas):
         if columna in df.columns:
-            if valor_minimo is not None and valor_maximo is not None:
-                condition = (df[columna] < valor_minimo) | (df[columna] > valor_maximo)
-                porcentaje = df[condition][columna].count() / df[columna].count() * 100
-            else:
-                porcentaje = 0
-            
-            if porcentaje == 0:
-                print(f"No hay datos fuera de rango para la columna {columna}. No se puede generar la gráfica.")
-            
+            condition = conditions[idx][1]
+            porcentaje = df[condition].shape[0] / df[columna].shape[0] * 100
             porcentajes_error.append(porcentaje)
         else:
             print(f"Columna {columna} no encontrada en el DataFrame.")
@@ -102,6 +95,7 @@ def generar_grafico(df, columnas_seleccionadas, valor_minimo=None, valor_maximo=
     ax.set_ylabel('Porcentaje de Error')
     ax.set_title('Porcentaje de Error para las Columnas Seleccionadas')
     ax.set_xlabel('Columnas')
+    ax.set_yticks(range(0, 101, 10))  # Ajustar el eje y para mostrar más valores de porcentaje
 
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
