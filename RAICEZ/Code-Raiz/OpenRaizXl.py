@@ -20,12 +20,19 @@ def procesar_datos():
     if archivo:
         columnas_seleccionadas = [col.strip() for col in entry_columnas.get().split(',')]
         if columnas_seleccionadas:
-            if askstring("Input", "¿Desea ingresar los mismos valores para todas las columnas? (s/n)").lower() == 's':
-                valor_minimo = float(askstring("Input", "Ingrese el valor mínimo para todas las columnas:"))
-                valor_maximo = float(askstring("Input", "Ingrese el valor máximo para todas las columnas:"))
-                filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
-            else:
-                filtrar_datos(archivo, columnas_seleccionadas)
+            respuesta = messagebox.askyesno("Input", "¿Desea ingresar los mismos valores para todas las columnas?")
+            if respuesta:  # Si el usuario selecciona "Sí"
+                try:
+                    valor_minimo = float(askstring("Input", "Ingrese el valor mínimo para todas las columnas:"))
+                    valor_maximo = float(askstring("Input", "Ingrese el valor máximo para todas las columnas:"))
+                    filtrar_datos(archivo, columnas_seleccionadas, valor_minimo, valor_maximo)
+                except (TypeError, ValueError):
+                    messagebox.showerror("Error", "Valor mínimo o máximo no válido. Operación cancelada.")
+            else:  # Si el usuario selecciona "No"
+                try:
+                    filtrar_datos(archivo, columnas_seleccionadas)
+                except (TypeError, ValueError):
+                    messagebox.showerror("Error", "Valores no válidos. Operación cancelada.")
         else:
             messagebox.showinfo("Información", "Por favor, introduce las columnas.")
     else:
@@ -34,25 +41,48 @@ def procesar_datos():
 def filtrar_datos(archivo, columnas_seleccionadas, valor_minimo=None, valor_maximo=None):
     df = pd.read_excel(archivo)
     conditions = []
+    columnas_no_encontradas = []
+    datos_fuera_de_rango = False
 
     if valor_minimo is not None and valor_maximo is not None:
         for columna in columnas_seleccionadas:
-            df[columna] = pd.to_numeric(df[columna], errors='coerce')
-            condition = (df[columna] < valor_minimo) | (df[columna] > valor_maximo + epsilon)
-            conditions.append((columna, condition))
-            print(f"Límites para la columna {columna}: Mínimo = {valor_minimo}, Máximo = {valor_maximo}")
-            print(f"Valores fuera de rango para la columna {columna}:")
-            print(df[columna][condition])
+            if columna in df.columns:
+                df[columna] = pd.to_numeric(df[columna], errors='coerce')
+                condition = (df[columna] < valor_minimo) | (df[columna] > valor_maximo + epsilon)
+                conditions.append((columna, condition))
+                if df[columna][condition].count() > 0:
+                    datos_fuera_de_rango = True
+                print(f"Límites para la columna {columna}: Mínimo = {valor_minimo}, Máximo = {valor_maximo}")
+                print(f"Valores fuera de rango para la columna {columna}:")
+                print(df[columna][condition])
+            else:
+                columnas_no_encontradas.append(columna)
     else:
         for columna in columnas_seleccionadas:
-            rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
-            rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
-            df[columna] = pd.to_numeric(df[columna], errors='coerce')
-            condition = (df[columna] < rango_min) | (df[columna] > rango_max + epsilon)
-            conditions.append((columna, condition))
-            print(f"Límites para la columna {columna}: Mínimo = {rango_min}, Máximo = {rango_max}")
-            print(f"Valores fuera de rango para la columna {columna}:")
-            print(df[columna][condition])
+            if columna in df.columns:
+                try:
+                    rango_min = float(askstring("Input", f"Introduce el mínimo para {columna}:"))
+                    rango_max = float(askstring("Input", f"Introduce el máximo para {columna}:"))
+                    df[columna] = pd.to_numeric(df[columna], errors='coerce')
+                    condition = (df[columna] < rango_min) | (df[columna] > rango_max + epsilon)
+                    conditions.append((columna, condition))
+                    if df[columna][condition].count() > 0:
+                        datos_fuera_de_rango = True
+                    print(f"Límites para la columna {columna}: Mínimo = {rango_min}, Máximo = {rango_max}")
+                    print(f"Valores fuera de rango para la columna {columna}:")
+                    print(df[columna][condition])
+                except (TypeError, ValueError):
+                    messagebox.showerror("Error", f"Valores no válidos para la columna {columna}. Operación cancelada.")
+                    return
+            else:
+                columnas_no_encontradas.append(columna)
+
+    if columnas_no_encontradas:
+        messagebox.showinfo("Información", f"Columnas no encontradas en el archivo: {', '.join(columnas_no_encontradas)}")
+
+    if not datos_fuera_de_rango:
+        messagebox.showinfo("Información", "No hay datos fuera de rango para las columnas seleccionadas.")
+        return
 
     nombre_archivo = os.path.splitext(os.path.basename(archivo))[0]
     archivo_salida = f'{nombre_archivo}_datos_filtrados.xlsx'
