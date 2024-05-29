@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 archivo_excel = r'C:\Users\VINKO\Documents\GitHub\Raicez\RAICEZ\Excel\Temperatura control 15 feb- 13 abr 2020_OFICIAL.xlsx'
 columnas = ['TtarRC_Avg(1)', 'TtarRC_Avg(2)', 'TtarRC_Avg(3)', 'TtarRC_Avg(4)', 'TtarRC_Avg(5)', 'TtarRC_Avg(6)', 'TtarRC_Avg(7)', 'TtarRC_Avg(8)',
             'TtarHC_Avg(1)','TtarHC_Avg(2)','TtarHC_Avg(3)','TtarHC_Avg(4)','TtarHC_Avg(5)','TtarHC_Avg(6)','TtarHC_Avg(7)','TtarHC_Avg(8)']  # Reemplaza con los nombres de las columnas deseadas
