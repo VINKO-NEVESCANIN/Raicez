@@ -1,0 +1,67 @@
+Bienvenido al manual de usuario de la aplicación de gestión y optimización de datos de temperatura. 
+
+Esta herramienta está diseñada para ayudarle a cargar, filtrar, analizar y visualizar datos de temperatura recogidos por sensores y almacenados en archivos Excel. La aplicación está desarrollada en Python y utiliza diversas bibliotecas para ofrecer una solución eficiente y fácil de usar.
+
+Requisitos del Sistema:
+Sistema Operativo: Windows, macOS o Linux
+Python 3.9 instalado
+Bibliotecas de Python necesarias: pandas, openpyxl, matplotlib, tkinter
+Microsoft Excel (opcional pero recomendado)
+
+Instalación
+	Instalación de Python:
+
+	Descargue e instale Python desde python.org.
+	Asegúrese de añadir Python al PATH durante la instalación.
+	
+	Instalación de Bibliotecas:
+
+	Abra la terminal o el símbolo del sistema.
+	Instale las bibliotecas necesarias ejecutando los siguientes comandos:
+	pip install pandas openpyxl matplotlib
+	
+Inicio de la Aplicación
+	Abra la terminal o el símbolo del Sistema(Se recomieda Usar Visual Studio)
+	Navegue al directorio donde se encuentra el archivo de la aplicación.
+	Ejecute el programa con el siguiente comando: 
+	python app.py 
+
+ Selección del Archivo Excel:
+Al iniciar la aplicación, se abrirá una ventana de interfaz gráfica.
+Haga clic en el botón "Cargar Archivo".
+Seleccione el archivo Excel que desea cargar y haga clic en "Abrir".
+
+Selección y Edición de Columnas
+Introducción de Columnas:
+	Ingrese los nombres de las columnas que desea editar, separados por comas, en el campo de texto correspondiente.
+	Ejemplo: Temperatura, Humedad, Presión.
+
+
+Procesar Columnas:
+Haga clic en el botón "Procesar".
+Aparecerá una ventana emergente preguntando si desea ingresar los mismos valores de rango para todas las columnas.
+
+
+Ingreso de Valores de Rango:
+	Si selecciona "Sí", ingrese los valores mínimo y máximo que se aplicarán a todas las columnas.
+	Si selecciona "No", ingrese los valores mínimo y máximo para cada columna por separado.
+
+Resultados del Procesamiento:
+	La aplicación generará un nuevo archivo Excel con los datos filtrados y resaltados según los valores de rango especificados.
+
+Visualización de Datos
+Generación de Gráficas:
+	Después de procesar los datos, la aplicación generará gráficos que muestran la distribución de los datos y los valores fuera de rango.
+	Estos gráficos se mostrarán en una ventana emergente.
+
+Solución de Problemas
+Problemas Comunes:
+
+	Error al cargar el archivo Excel:
+	Asegúrese de que el archivo está en formato .xlsx.
+	Verifique que el archivo no esté abierto en otra aplicación.
+	Problemas de instalación:
+	Asegúrese de que todas las bibliotecas necesarias están correctamente instaladas.
+Soporte Adicional:
+
+	Si experimenta problemas adicionales, consulte la documentación técnica o póngase en contacto con el soporte técnico.
